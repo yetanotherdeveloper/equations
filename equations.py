@@ -4,9 +4,12 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 import sys
 import random
+import subprocess
+import os
 
 # TODO:
 # subtracting, multiplying, fibonacci, derivatives
+# Open netflix in kids profile
 
 class Equation(QtGui.QWidget):
     def __init__(self):
@@ -57,6 +60,16 @@ class Equation(QtGui.QWidget):
                 #TODO verify if anwser is ok
                 if(self.validateEquation() == True):
                     print("SUPER KASIA")
+                    pic = QtGui.QLabel(self)
+                    pic.setGeometry(700,450,400,400)
+                    pic.setPixmap(QtGui.QPixmap(os.getcwd() + "/smiley400.png"))
+                    pic.show()
+                    self.update()
+                    subprocess.call(["sudo","shutdown","-h","+25"])
+                    subprocess.Popen(["google-chrome",
+                                     "--start-maximized",
+                                     "--app=http://www.netflix.com"])
+                    self.text = ""
                 else:
                     print("ZLE!!")
                 
