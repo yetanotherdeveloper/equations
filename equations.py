@@ -16,8 +16,16 @@ class Equation(QtGui.QWidget):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
-        self.text = self.makeRandomEquation()
-        self.lenBaseText = len(self.text)   # length of basic equation (this should be preserved)
+        self.text = [0,0]
+        self.a = [0,0]
+        self.b = [0,0]
+        self.op = [0,0]
+        self.text[0], self.a[0], self.b[0], self.op[0] = self.makeRandomEquation("+")
+        self.text[1], self.a[1], self.b[1], self.op[1] = self.makeRandomEquation("-")
+        self.lenBaseText = [0,0]
+        self.lenBaseText[0] = len(self.text[0])   # length of basic equation (this should be preserved)
+        self.lenBaseText[1] = len(self.text[1])   # length of basic equation (this should be preserved)
+        self.iter = 0;
         self.showFullScreen()
     def paintEvent(self,event):
         qp = QtGui.QPainter()
@@ -28,15 +36,18 @@ class Equation(QtGui.QWidget):
     def drawText(self, event, qp):
         qp.setPen(QtGui.QColor(0,0,255))
         qp.setFont(QtGui.QFont('Decorative',200))
-        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text)
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text[self.iter])
 
-    def makeRandomEquation(self):
-        #TODO: Support for other operations (-, *)
-        self.a = random.randint(1,5)
-        self.b = random.randint(1,5)
-        equation_string=str(self.a)+"+"+str(self.b)+"="
-        #print("Equation string %s" %(equation_string))
-        return equation_string
+    def makeRandomEquation(self, matop):
+        if matop == "+":
+            a = random.randint(0,5)
+            b = random.randint(0,5)
+            equation_string=str(a)+"+"+str(b)+"="
+        elif matop == "-":
+            a = random.randint(5,10)
+            b = random.randint(0,5)
+            equation_string=str(a)+"-"+str(b)+"="
+        return equation_string, a, b, matop
 
     def keyPressEvent(self, e):
         key2str = {
@@ -52,24 +63,25 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_9 : "9",
                     }
         if(e.isAutoRepeat() != True):
-            if((e.key() == QtCore.Qt.Key_Backspace) and (len(self.text) > self.lenBaseText)):
-               self.text = self.text[:-1]         
-            elif((e.key() in key2str) and (len(self.text) < self.lenBaseText + 3)): # No more than three characters
-                self.text+=key2str[e.key()]
+            if((e.key() == QtCore.Qt.Key_Backspace) and (len(self.text[self.iter]) > self.lenBaseText[self.iter])):
+               self.text[self.iter] = self.text[self.iter][:-1]         
+            elif((e.key() in key2str) and (len(self.text[self.iter]) < self.lenBaseText[self.iter] + 3)): # No more than three characters
+                self.text[self.iter]+=key2str[e.key()]
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
-                #TODO verify if anwser is ok
                 if(self.validateEquation() == True):
-                    print("SUPER KASIA")
                     pic = QtGui.QLabel(self)
-                    pic.setGeometry(700,450,400,400)
+                    pic.setGeometry(700,650,400,400)
                     pic.setPixmap(QtGui.QPixmap(os.getcwd() + "/smiley400.png"))
                     pic.show()
                     self.update()
-                    subprocess.call(["sudo","shutdown","-h","+25"])
-                    subprocess.Popen(["google-chrome",
-                                     "--start-maximized",
-                                     "--app=http://www.netflix.com"])
-                    self.text = ""
+                    self.text[self.iter] = ""
+                    self.iter+=1
+                    if self.iter == len(self.text):
+                        subprocess.call(["sudo","shutdown","-h","+30"])
+                        subprocess.Popen(["google-chrome",
+                                         "--start-maximized",
+                                         "--app=http://www.netflix.com"])
+                        self.text.append("")
                 else:
                     print("ZLE!!")
                 
@@ -77,10 +89,14 @@ class Equation(QtGui.QWidget):
 
     def validateEquation(self):
         # Get result typed and convert it to number
-        if(len(self.text) == self.lenBaseText):
+        if(len(self.text[self.iter]) == self.lenBaseText[self.iter]):
             return False
-        typed_result = int(self.text[self.lenBaseText:])
-        computed_result = self.a + self.b
+        typed_result = int(self.text[self.iter][self.lenBaseText[self.iter]:])
+        computed_result = 0
+        if self.op[self.iter] == "+":
+            computed_result = self.a[self.iter] + self.b[self.iter]
+        elif self.op[self.iter] == "-":
+            computed_result = self.a[self.iter] - self.b[self.iter]
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
