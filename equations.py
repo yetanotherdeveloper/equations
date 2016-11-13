@@ -70,8 +70,9 @@ class Equation(QtGui.QWidget):
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
                     pic = QtGui.QLabel(self)
-                    pic.setGeometry(700,650,400,400)
-                    pic.setPixmap(QtGui.QPixmap(os.getcwd() + "/smiley400.png"))
+                    pic.setGeometry(0,650,400,400)
+                    pic.setPixmap(QtGui.QPixmap(os.path.realpath(__file__).replace("equations.py","") + "/smiley300.png"))
+                    print("Sciezka do skryptu: %s" %(os.path.realpath(__file__)))
                     pic.show()
                     self.update()
                     self.text[self.iter] = ""
