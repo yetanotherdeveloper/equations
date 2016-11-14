@@ -8,6 +8,8 @@ import subprocess
 import os
 
 # TODO:
+# limit of two houres per day
+# config: one time session length, day limit, ULR to open
 # subtracting, multiplying, fibonacci, derivatives
 # Open netflix in kids profile
 
