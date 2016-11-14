@@ -70,7 +70,7 @@ class Equation(QtGui.QWidget):
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
                     pic = QtGui.QLabel(self)
-                    pic.setGeometry(0,650,400,400)
+                    pic.setGeometry(0+self.iter*300,650,300,300)
                     pic.setPixmap(QtGui.QPixmap(os.path.realpath(__file__).replace("equations.py","") + "/smiley300.png"))
                     print("Sciezka do skryptu: %s" %(os.path.realpath(__file__)))
                     pic.show()
@@ -105,9 +105,5 @@ class Equation(QtGui.QWidget):
             return False
         
 app = QtGui.QApplication(sys.argv)
-#w = QtGui.QWidget()
-#w.resize(300,400)
-#w.move(0,0)
-#w.show()
 rownanko = Equation()       # some initialization has to be done
 sys.exit(app.exec_())
