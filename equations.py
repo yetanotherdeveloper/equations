@@ -16,6 +16,8 @@ class Equation(QtGui.QWidget):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
+        self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
+        self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
         self.text = [0,0]
         self.a = [0,0]
         self.b = [0,0]
@@ -71,8 +73,7 @@ class Equation(QtGui.QWidget):
                 if(self.validateEquation() == True):
                     pic = QtGui.QLabel(self)
                     pic.setGeometry(0+self.iter*300,650,300,300)
-                    pic.setPixmap(QtGui.QPixmap(os.path.realpath(__file__).replace("equations.py","") + "/smiley300.png"))
-                    print("Sciezka do skryptu: %s" %(os.path.realpath(__file__)))
+                    pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
                     pic.show()
                     self.update()
                     self.text[self.iter] = ""
@@ -84,7 +85,7 @@ class Equation(QtGui.QWidget):
                                          "--app=http://www.netflix.com"])
                         self.text.append("")
                 else:
-                    print("ZLE!!")
+                    self.voices['failure'].play() 
                 
             self.update()
 
