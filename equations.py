@@ -6,12 +6,59 @@ import sys
 import random
 import subprocess
 import os
+import pickle
+from os.path import expanduser 
+import datetime
 
 # TODO:
 # limit of two houres per day
+# commandline line support: setting equationsconfig , run without shutdown, netflix
+# positioning a medal so it put along bottom edge not on fixed position
 # config: one time session length, day limit, ULR to open
 # subtracting, multiplying, fibonacci, derivatives
 # Open netflix in kids profile
+
+# Class to define object for serialization eg.
+class EquationsConfig:
+    def __init__(self):
+        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 4 }
+        # If there is a file unpickle it
+        # then check the data
+        # if data is obsolete then reinstantate date and zero the counter of daily watching
+        # if data is present then read counter 
+        # if counter meets maximum then prevent from watching
+        # If counter is not in maximal state then increment 
+#        import pdb; pdb.set_trace()
+        configDir = expanduser("~")+"/.equations/" 
+        if os.path.isfile(configDir+"config"):
+            configFile = open(configDir+"config","r")
+            self.data = pickle.load(configFile)
+            if self.data['day'] != datetime.datetime.now().day:
+                self.data['day'] = datetime.datetime.now().day
+                self.data['daily_counter'] = 1
+                self.data['maximum_daily_counter'] = 4
+                self.run = True
+            elif self.data['daily_counter'] < self.data['maximum_daily_counter']:
+                self.data['daily_counter'] = self.data['daily_counter'] + 1
+                self.run = True
+            else:
+                self.run = False
+        else:
+            # If there is no file then create one a by pickling this object
+            if os.path.isdir(configDir) == False:
+                os.mkdir(configDir)
+            # Fill in new data
+            self.data['day'] = datetime.datetime.now().day
+            self.data['daily_counter'] = 1
+            self.data['maximum_daily_counter'] = 4
+            self.run = True
+        configFile = open(configDir+"config","w")
+        pickle.dump(self.data,configFile)
+
+    def shouldRun(self):
+        """ Function to decide if this session is legitimate to play cartoons"""
+
+        return self.run
 
 class Equation(QtGui.QWidget):
     def __init__(self):
@@ -107,6 +154,9 @@ class Equation(QtGui.QWidget):
         else:
             return False
         
-app = QtGui.QApplication(sys.argv)
-rownanko = Equation()       # some initialization has to be done
-sys.exit(app.exec_())
+if EquationsConfig().shouldRun() == True:
+    app = QtGui.QApplication(sys.argv)
+    rownanko = Equation()       # some initialization has to be done
+    sys.exit(app.exec_())
+else:
+   print "Daily limit exhusted" 
