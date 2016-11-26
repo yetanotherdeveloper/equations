@@ -60,6 +60,18 @@ class EquationsConfig:
 
         return self.run
 
+class Stop(QtGui.QWidget):
+    def __init__(self):
+        super(Stop, self).__init__()
+        # TODO make it in the middle
+        pic = QtGui.QLabel(self)
+        pic.setGeometry(300,100,757,767)
+        pic.setPixmap(QtGui.QPixmap(os.path.realpath(__file__).replace("equations.py","") + "/stop.png"))
+        pic.show()
+        self.update()
+        subprocess.call(["sudo","shutdown","-h","+1"])
+        self.showFullScreen()
+
 class Equation(QtGui.QWidget):
     def __init__(self):
         super(Equation, self).__init__()
@@ -153,10 +165,12 @@ class Equation(QtGui.QWidget):
             return True
         else:
             return False
-        
+
+# main function starts here        
+app = QtGui.QApplication(sys.argv)
 if EquationsConfig().shouldRun() == True:
-    app = QtGui.QApplication(sys.argv)
     rownanko = Equation()       # some initialization has to be done
-    sys.exit(app.exec_())
 else:
-   print "Daily limit exhusted" 
+    print "Daily limit exhusted" 
+    stop = Stop()    
+sys.exit(app.exec_())
