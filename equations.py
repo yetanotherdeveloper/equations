@@ -9,10 +9,14 @@ import os
 import pickle
 from os.path import expanduser 
 import datetime
+import argparse
+import time
 
 # TODO:
 # limit of two houres per day
 # commandline line support: setting equationsconfig , run without shutdown, netflix
+# commandline: show current config
+# relative positioning of images
 # positioning a medal so it put along bottom edge not on fixed position
 # config: one time session length, day limit, ULR to open
 # subtracting, multiplying, fibonacci, derivatives
@@ -20,8 +24,10 @@ import datetime
 
 # Class to define object for serialization eg.
 class EquationsConfig:
-    def __init__(self):
+    def __init__(self, args):
+        self.terminate = False
         self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 4 }
+
         # If there is a file unpickle it
         # then check the data
         # if data is obsolete then reinstantate date and zero the counter of daily watching
@@ -33,6 +39,30 @@ class EquationsConfig:
         if os.path.isfile(configDir+"config"):
             configFile = open(configDir+"config","r")
             self.data = pickle.load(configFile)
+
+            if args.set_daily_counter !=0:
+                self.data['daily_counter'] = args.set_daily_counter
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+            if args.set_maximum_daily_counter !=0:
+                self.data['maximum_daily_counter'] = args.set_maximum_daily_counter
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+            # If there was option to print config then
+            # do so, and make program terminated 
+            if args.print_config == True:
+                self.print_config();
+                self.terminate = True;
+                return;
+            
             if self.data['day'] != datetime.datetime.now().day:
                 self.data['day'] = datetime.datetime.now().day
                 self.data['daily_counter'] = 1
@@ -44,6 +74,10 @@ class EquationsConfig:
             else:
                 self.run = False
         else:
+            if args.print_config == True:
+                print("\n No Config found!\n");
+                self.terminate = True;
+                return;
             # If there is no file then create one a by pickling this object
             if os.path.isdir(configDir) == False:
                 os.mkdir(configDir)
@@ -55,13 +89,23 @@ class EquationsConfig:
         configFile = open(configDir+"config","w")
         pickle.dump(self.data,configFile)
 
+    def print_config(self):
+        print(""" Configuration: 
+                        day: %d   
+                        daily_counter: %d
+                        maximum_daily_counter: %d
+                                    """ %
+                         (self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter']))
+        
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
-
         return self.run
 
+    def shouldTerminate(self):
+        return self.terminate
+
 class Stop(QtGui.QWidget):
-    def __init__(self):
+    def __init__(self,args):
         super(Stop, self).__init__()
         # TODO make it in the middle
         pic = QtGui.QLabel(self)
@@ -69,14 +113,18 @@ class Stop(QtGui.QWidget):
         pic.setPixmap(QtGui.QPixmap(os.path.realpath(__file__).replace("equations.py","") + "/stop.png"))
         pic.show()
         self.update()
-        subprocess.call(["sudo","shutdown","-h","+1"])
+        if args.dry_run == False:
+            subprocess.call(["sudo","shutdown","-h","+1"])
+        else:
+            exit()
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self):
+    def __init__(self,args):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
+        self.args = args
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
         self.text = [0,0]
@@ -140,10 +188,13 @@ class Equation(QtGui.QWidget):
                     self.text[self.iter] = ""
                     self.iter+=1
                     if self.iter == len(self.text):
-                        subprocess.call(["sudo","shutdown","-h","+30"])
-                        subprocess.Popen(["google-chrome",
-                                         "--start-maximized",
-                                         "--app=http://www.netflix.com"])
+                        if self.args.dry_run == False:
+                            subprocess.call(["sudo","shutdown","-h","+30"])
+                            subprocess.Popen(["google-chrome",
+                                             "--start-maximized",
+                                             "--app=http://www.netflix.com"])
+                        else:
+                            exit()
                         self.text.append("")
                 else:
                     self.voices['failure'].play() 
@@ -167,10 +218,21 @@ class Equation(QtGui.QWidget):
             return False
 
 # main function starts here        
+parser = argparse.ArgumentParser()
+parser.add_argument("--print_config", help="Print configuration file", action="store_true")
+parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=0)
+parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=0)
+parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
+args = parser.parse_args()
+config = EquationsConfig(args)
+
+if config.shouldTerminate() == True:
+    exit()
+
 app = QtGui.QApplication(sys.argv)
-if EquationsConfig().shouldRun() == True:
-    rownanko = Equation()       # some initialization has to be done
+if config.shouldRun() == True:
+    rownanko = Equation(args)       # some initialization has to be done
 else:
     print "Daily limit exhusted" 
-    stop = Stop()    
+    stop = Stop(args)    
 sys.exit(app.exec_())
