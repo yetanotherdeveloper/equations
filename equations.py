@@ -153,7 +153,14 @@ class Equation(QtGui.QWidget):
                 y = self.geometry().y()
                 width = self.geometry().width()
                 height = self.geometry().height()
-                pic.setGeometry(x+pos*sizeOfBear,y,sizeOfBear,sizeOfBear)
+                if (pos+1)*sizeOfBear >= width:
+                    posx = x+(pos+1)*sizeOfBear - width
+                    posy = y+sizeOfBear
+                    print("posx=%d posy=%d" %(posx,posy))
+                else:
+                    posx = x+pos*sizeOfBear
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
                 pic.show()
                 self.tempImages.append(pic)
         self.update()
@@ -173,7 +180,7 @@ class Equation(QtGui.QWidget):
             b = random.randint(0,5)
             equation_string=str(a)+"-"+str(b)+"="
         elif matop == "?":
-            a = random.randint(1,15)
+            a = random.randint(5,15)
             b = random.randint(0,0)
             equation_string="Ile? ="
             # Draw bears
