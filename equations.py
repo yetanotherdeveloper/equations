@@ -26,7 +26,7 @@ import time
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 4 }
+        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3 }
 
         # If there is a file unpickle it
         # then check the data
@@ -66,7 +66,6 @@ class EquationsConfig:
             if self.data['day'] != datetime.datetime.now().day:
                 self.data['day'] = datetime.datetime.now().day
                 self.data['daily_counter'] = 1
-                self.data['maximum_daily_counter'] = 4
                 self.run = True
             elif self.data['daily_counter'] < self.data['maximum_daily_counter']:
                 self.data['daily_counter'] = self.data['daily_counter'] + 1
@@ -84,7 +83,6 @@ class EquationsConfig:
             # Fill in new data
             self.data['day'] = datetime.datetime.now().day
             self.data['daily_counter'] = 1
-            self.data['maximum_daily_counter'] = 4
             self.run = True
         configFile = open(configDir+"config","w")
         pickle.dump(self.data,configFile)
@@ -180,8 +178,13 @@ class Equation(QtGui.QWidget):
                 self.text[self.iter]+=key2str[e.key()]
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
+                    # Put medals starting from bottom left
                     pic = QtGui.QLabel(self)
-                    pic.setGeometry(0+self.iter*300,650,300,300)
+                    x = self.geometry().x()
+                    y = self.geometry().y()
+                    width = self.geometry().width()
+                    height = self.geometry().height()
+                    pic.setGeometry(x+self.iter*300,y + height - 300,300,300)
                     pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
                     pic.show()
                     self.update()
