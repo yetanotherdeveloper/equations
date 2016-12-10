@@ -1,6 +1,7 @@
 #!/bin/env python
 
 from PyQt4 import QtGui
+from PyQt4 import QtSvg
 from PyQt4 import QtCore
 import sys
 import random
@@ -145,16 +146,17 @@ class Equation(QtGui.QWidget):
         self.drawText(event, qp)
         qp.end()
         if self.op[self.iter] == "?" and len(self.tempImages) == 0:
+            sizeOfBear = 200
             for pos in range(0,self.a[self.iter]):
-                pic = QtGui.QLabel(self)
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
                 x = self.geometry().x()
                 y = self.geometry().y()
                 width = self.geometry().width()
                 height = self.geometry().height()
-                pic.setGeometry(x+pos*100,y+100,100,100)
-                pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
+                pic.setGeometry(x+pos*sizeOfBear,y,sizeOfBear,sizeOfBear)
                 pic.show()
                 self.tempImages.append(pic)
+        self.update()
 
     def drawText(self, event, qp):
         qp.setPen(QtGui.QColor(0,0,255))
@@ -173,7 +175,7 @@ class Equation(QtGui.QWidget):
         elif matop == "?":
             a = random.randint(1,15)
             b = random.randint(0,0)
-            equation_string="Ile?("+str(a)+")="
+            equation_string="Ile? ="
             # Draw bears
         return equation_string, a, b, matop
 
