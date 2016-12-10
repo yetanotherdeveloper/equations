@@ -125,15 +125,18 @@ class Equation(QtGui.QWidget):
         self.args = args
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
-        self.text = [0,0]
-        self.a = [0,0]
-        self.b = [0,0]
-        self.op = [0,0]
+        self.text = [0,0,0]
+        self.tempImages = []
+        self.a = [0,0,0]
+        self.b = [0,0,0]
+        self.op = [0,0,0]
         self.text[0], self.a[0], self.b[0], self.op[0] = self.makeRandomEquation("+")
         self.text[1], self.a[1], self.b[1], self.op[1] = self.makeRandomEquation("-")
-        self.lenBaseText = [0,0]
+        self.text[2], self.a[2], self.b[2], self.op[2] = self.makeRandomEquation("?")
+        self.lenBaseText = [0,0,0]
         self.lenBaseText[0] = len(self.text[0])   # length of basic equation (this should be preserved)
         self.lenBaseText[1] = len(self.text[1])   # length of basic equation (this should be preserved)
+        self.lenBaseText[2] = len(self.text[2])   # length of basic equation (this should be preserved)
         self.iter = 0;
         self.showFullScreen()
     def paintEvent(self,event):
@@ -141,6 +144,17 @@ class Equation(QtGui.QWidget):
         qp.begin(self)
         self.drawText(event, qp)
         qp.end()
+        if self.op[self.iter] == "?" and len(self.tempImages) == 0:
+            for pos in range(0,self.a[self.iter]):
+                pic = QtGui.QLabel(self)
+                x = self.geometry().x()
+                y = self.geometry().y()
+                width = self.geometry().width()
+                height = self.geometry().height()
+                pic.setGeometry(x+pos*100,y+100,100,100)
+                pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
+                pic.show()
+                self.tempImages.append(pic)
 
     def drawText(self, event, qp):
         qp.setPen(QtGui.QColor(0,0,255))
@@ -156,6 +170,11 @@ class Equation(QtGui.QWidget):
             a = random.randint(5,10)
             b = random.randint(0,5)
             equation_string=str(a)+"-"+str(b)+"="
+        elif matop == "?":
+            a = random.randint(1,15)
+            b = random.randint(0,0)
+            equation_string="Ile?("+str(a)+")="
+            # Draw bears
         return equation_string, a, b, matop
 
     def keyPressEvent(self, e):
@@ -214,6 +233,8 @@ class Equation(QtGui.QWidget):
             computed_result = self.a[self.iter] + self.b[self.iter]
         elif self.op[self.iter] == "-":
             computed_result = self.a[self.iter] - self.b[self.iter]
+        elif self.op[self.iter] == "?":
+            computed_result = self.a[self.iter]
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
