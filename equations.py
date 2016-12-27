@@ -22,12 +22,13 @@ import time
 # config: one time session length, day limit, ULR to open
 # subtracting, multiplying, fibonacci, derivatives
 # Open netflix in kids profile
+# MAke a function with setting comnmandline (avoid copy paste)
 
 # Class to define object for serialization eg.
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3 }
+        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
         # then check the data
@@ -51,6 +52,22 @@ class EquationsConfig:
 
             if args.set_maximum_daily_counter !=0:
                 self.data['maximum_daily_counter'] = args.set_maximum_daily_counter
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+            if args.set_maximum_value !=0:
+                self.data['maximum_value'] = args.set_maximum_value
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+            if args.set_maximum_bears !=0:
+                self.data['maximum_bears'] = args.set_maximum_bears
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -93,8 +110,10 @@ class EquationsConfig:
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
+                        maximum_value: %d
+                        maximum_bears: %d
                                     """ %
-                         (self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter']))
+                         (self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -102,6 +121,12 @@ class EquationsConfig:
 
     def shouldTerminate(self):
         return self.terminate
+
+    def getMaximumValue(self):
+        return self.data['maximum_value']
+
+    def getMaximumBears(self):
+        return self.data['maximum_bears']
 
 class Stop(QtGui.QWidget):
     def __init__(self,args):
@@ -119,7 +144,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args):
+    def __init__(self,args, maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -131,9 +156,9 @@ class Equation(QtGui.QWidget):
         self.a = [0,0,0]
         self.b = [0,0,0]
         self.op = [0,0,0]
-        self.text[0], self.a[0], self.b[0], self.op[0] = self.makeRandomEquation("+")
-        self.text[1], self.a[1], self.b[1], self.op[1] = self.makeRandomEquation("-")
-        self.text[2], self.a[2], self.b[2], self.op[2] = self.makeRandomEquation("?")
+        self.text[0], self.a[0], self.b[0], self.op[0] = self.makeRandomEquation("+",maximum_value)
+        self.text[1], self.a[1], self.b[1], self.op[1] = self.makeRandomEquation("-",maximum_value)
+        self.text[2], self.a[2], self.b[2], self.op[2] = self.makeRandomEquation("?",maximum_bears)
         self.lenBaseText = [0,0,0]
         self.lenBaseText[0] = len(self.text[0])   # length of basic equation (this should be preserved)
         self.lenBaseText[1] = len(self.text[1])   # length of basic equation (this should be preserved)
@@ -156,7 +181,6 @@ class Equation(QtGui.QWidget):
                 if (pos+1)*sizeOfBear >= width:
                     posx = x+(pos+1)*sizeOfBear - width
                     posy = y+sizeOfBear
-                    print("posx=%d posy=%d" %(posx,posy))
                 else:
                     posx = x+pos*sizeOfBear
                     posy = y
@@ -170,17 +194,17 @@ class Equation(QtGui.QWidget):
         qp.setFont(QtGui.QFont('Decorative',200))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text[self.iter])
 
-    def makeRandomEquation(self, matop):
+    def makeRandomEquation(self, matop, matMaxValue):
         if matop == "+":
-            a = random.randint(0,5)
-            b = random.randint(0,5)
+            a = random.randint(0,matMaxValue)
+            b = random.randint(0,matMaxValue-a)
             equation_string=str(a)+"+"+str(b)+"="
         elif matop == "-":
-            a = random.randint(5,10)
-            b = random.randint(0,5)
+            a = random.randint(matMaxValue/2,matMaxValue)
+            b = random.randint(0,matMaxValue/2)
             equation_string=str(a)+"-"+str(b)+"="
         elif matop == "?":
-            a = random.randint(5,15)
+            a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
             equation_string="Ile? ="
             # Draw bears
@@ -255,6 +279,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--print_config", help="Print configuration file", action="store_true")
 parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=0)
 parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=0)
+parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=0)
+parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=0)
 parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
 args = parser.parse_args()
 config = EquationsConfig(args)
@@ -264,8 +290,8 @@ if config.shouldTerminate() == True:
 
 app = QtGui.QApplication(sys.argv)
 if config.shouldRun() == True:
-    rownanko = Equation(args)       # some initialization has to be done
+    rownanko = Equation(args,config.getMaximumValue(),config.getMaximumBears())       # some initialization has to be done
 else:
-    print "Daily limit exhusted" 
+    print "Daily limit exhausted" 
     stop = Stop(args)    
 sys.exit(app.exec_())
