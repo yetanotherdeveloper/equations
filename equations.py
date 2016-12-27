@@ -23,6 +23,7 @@ import time
 # subtracting, multiplying, fibonacci, derivatives
 # Open netflix in kids profile
 # MAke a function with setting comnmandline (avoid copy paste)
+# Make unit test (pytest)
 
 # Class to define object for serialization eg.
 class EquationsConfig:
@@ -42,7 +43,7 @@ class EquationsConfig:
             configFile = open(configDir+"config","r")
             self.data = pickle.load(configFile)
 
-            if args.set_daily_counter !=0:
+            if args.set_daily_counter > 0:
                 self.data['daily_counter'] = args.set_daily_counter
                 self.terminate = True;
                 self.print_config();
@@ -50,7 +51,7 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
-            if args.set_maximum_daily_counter !=0:
+            if args.set_maximum_daily_counter > 0:
                 self.data['maximum_daily_counter'] = args.set_maximum_daily_counter
                 self.terminate = True;
                 self.print_config();
@@ -58,7 +59,7 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
-            if args.set_maximum_value !=0:
+            if args.set_maximum_value >= 0:
                 self.data['maximum_value'] = args.set_maximum_value
                 self.terminate = True;
                 self.print_config();
@@ -66,7 +67,7 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
-            if args.set_maximum_bears !=0:
+            if args.set_maximum_bears >= 0:
                 self.data['maximum_bears'] = args.set_maximum_bears
                 self.terminate = True;
                 self.print_config();
@@ -151,18 +152,19 @@ class Equation(QtGui.QWidget):
         self.args = args
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
-        self.text = [0,0,0]
+        self.tasks = []
         self.tempImages = []
-        self.a = [0,0,0]
-        self.b = [0,0,0]
-        self.op = [0,0,0]
-        self.text[0], self.a[0], self.b[0], self.op[0] = self.makeRandomEquation("+",maximum_value)
-        self.text[1], self.a[1], self.b[1], self.op[1] = self.makeRandomEquation("-",maximum_value)
-        self.text[2], self.a[2], self.b[2], self.op[2] = self.makeRandomEquation("?",maximum_bears)
-        self.lenBaseText = [0,0,0]
-        self.lenBaseText[0] = len(self.text[0])   # length of basic equation (this should be preserved)
-        self.lenBaseText[1] = len(self.text[1])   # length of basic equation (this should be preserved)
-        self.lenBaseText[2] = len(self.text[2])   # length of basic equation (this should be preserved)
+        self.lenBaseText = []
+        # For maximum operation value of 0, we do not make a equations
+        if maximum_value != 0:
+            self.tasks.append(self.makeRandomEquation("+",maximum_value))
+            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+            self.tasks.append(self.makeRandomEquation("-",maximum_value))
+            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+        
+        if maximum_bears != 0:
+            self.tasks.append(self.makeRandomEquation("?",maximum_bears))
+            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
         self.iter = 0;
         self.showFullScreen()
     def paintEvent(self,event):
@@ -170,9 +172,9 @@ class Equation(QtGui.QWidget):
         qp.begin(self)
         self.drawText(event, qp)
         qp.end()
-        if self.op[self.iter] == "?" and len(self.tempImages) == 0:
+        if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and len(self.tempImages) == 0:
             sizeOfBear = 200
-            for pos in range(0,self.a[self.iter]):
+            for pos in range(0,self.tasks[self.iter][1]):
                 pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
                 x = self.geometry().x()
                 y = self.geometry().y()
@@ -192,7 +194,8 @@ class Equation(QtGui.QWidget):
     def drawText(self, event, qp):
         qp.setPen(QtGui.QColor(0,0,255))
         qp.setFont(QtGui.QFont('Decorative',200))
-        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text[self.iter])
+        if self.iter < len(self.tasks):
+            qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.tasks[self.iter][0])
 
     def makeRandomEquation(self, matop, matMaxValue):
         if matop == "+":
@@ -208,7 +211,7 @@ class Equation(QtGui.QWidget):
             b = random.randint(0,0)
             equation_string="Ile? ="
             # Draw bears
-        return equation_string, a, b, matop
+        return (equation_string, a, b, matop)
 
     def keyPressEvent(self, e):
         key2str = {
@@ -224,10 +227,10 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_9 : "9",
                     }
         if(e.isAutoRepeat() != True):
-            if((e.key() == QtCore.Qt.Key_Backspace) and (len(self.text[self.iter]) > self.lenBaseText[self.iter])):
-               self.text[self.iter] = self.text[self.iter][:-1]         
-            elif((e.key() in key2str) and (len(self.text[self.iter]) < self.lenBaseText[self.iter] + 3)): # No more than three characters
-                self.text[self.iter]+=key2str[e.key()]
+            if((e.key() == QtCore.Qt.Key_Backspace) and (len(self.tasks[self.iter][0]) > self.lenBaseText[self.iter])):
+               self.tasks[self.iter] = (self.tasks[self.iter][0][:-1], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
+            elif((e.key() in key2str) and (len(self.tasks[self.iter][0]) < self.lenBaseText[self.iter] + 3)): # No more than three characters
+                self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
                     # Put medals starting from bottom left
@@ -240,9 +243,9 @@ class Equation(QtGui.QWidget):
                     pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
                     pic.show()
                     self.update()
-                    self.text[self.iter] = ""
+                    self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
                     self.iter+=1
-                    if self.iter == len(self.text):
+                    if self.iter == len(self.tasks):
                         if self.args.dry_run == False:
                             subprocess.call(["sudo","shutdown","-h","+30"])
                             subprocess.Popen(["google-chrome",
@@ -250,7 +253,6 @@ class Equation(QtGui.QWidget):
                                              "--app=http://www.netflix.com"])
                         else:
                             exit()
-                        self.text.append("")
                 else:
                     self.voices['failure'].play() 
                 
@@ -258,16 +260,16 @@ class Equation(QtGui.QWidget):
 
     def validateEquation(self):
         # Get result typed and convert it to number
-        if(len(self.text[self.iter]) == self.lenBaseText[self.iter]):
+        if(len(self.tasks[self.iter][0]) == self.lenBaseText[self.iter]):
             return False
-        typed_result = int(self.text[self.iter][self.lenBaseText[self.iter]:])
+        typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
         computed_result = 0
-        if self.op[self.iter] == "+":
-            computed_result = self.a[self.iter] + self.b[self.iter]
-        elif self.op[self.iter] == "-":
-            computed_result = self.a[self.iter] - self.b[self.iter]
-        elif self.op[self.iter] == "?":
-            computed_result = self.a[self.iter]
+        if self.tasks[self.iter][3] == "+":
+            computed_result = self.tasks[self.iter][1] + self.tasks[self.iter][2]
+        elif self.tasks[self.iter][3] == "-":
+            computed_result = self.tasks[self.iter][1] - self.tasks[self.iter][2]
+        elif self.tasks[self.iter][3] == "?":
+            computed_result = self.tasks[self.iter][1]
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
@@ -277,10 +279,10 @@ class Equation(QtGui.QWidget):
 # main function starts here        
 parser = argparse.ArgumentParser()
 parser.add_argument("--print_config", help="Print configuration file", action="store_true")
-parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=0)
-parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=0)
-parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=0)
-parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=0)
+parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=-1)
+parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=-1)
+parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
+parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
 parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
 args = parser.parse_args()
 config = EquationsConfig(args)
