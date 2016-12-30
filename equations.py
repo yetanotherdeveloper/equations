@@ -18,10 +18,8 @@ import math
 # limit of two houres per day
 # commandline line support: setting equationsconfig , run without shutdown, netflix
 # commandline : enable/disable_{add,sub,div,mul}
-# relative positioning of images
-# positioning a medal so it put along bottom edge not on fixed position
-# config: one time session length, day limit, ULR to open
-# subtracting, multiplying, fibonacci, derivatives
+# config: one time session length, ULR to open
+# division fibonacci, derivatives
 # Open netflix in kids profile
 # MAke a function with setting comnmandline (avoid copy paste)
 # Make unit test (pytest)
@@ -30,7 +28,8 @@ import math
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
+        self.data = { 'enabled_add' : True, 'enabled_sub' : True,'enabled_mul' : True,
+                      'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
         # then check the data
@@ -38,11 +37,57 @@ class EquationsConfig:
         # if data is present then read counter 
         # if counter meets maximum then prevent from watching
         # If counter is not in maximal state then increment 
-#        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         configDir = expanduser("~")+"/.equations/" 
         if os.path.isfile(configDir+"config"):
             configFile = open(configDir+"config","r")
             self.data = pickle.load(configFile)
+
+            # Add
+            if args.enable_add == True:
+                self.data['enabled_add'] = True
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            if args.disable_add == True:
+                self.data['enabled_add'] = False
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            # Sub
+            if args.enable_sub == True:
+                self.data['enabled_sub'] = True
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            if args.disable_sub == True:
+                self.data['enabled_sub'] = False
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            # Mul
+            if args.enable_mul == True:
+                self.data['enabled_mul'] = True
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            if args.disable_mul == True:
+                self.data['enabled_mul'] = False
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
 
             if args.set_daily_counter > 0:
                 self.data['daily_counter'] = args.set_daily_counter
@@ -109,13 +154,17 @@ class EquationsConfig:
 
     def print_config(self):
         print(""" Configuration: 
+                        enabled_add: %r
+                        enabled_sub: %r
+                        enabled_mul: %r
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
                         maximum_value: %d
                         maximum_bears: %d
                                     """ %
-                         (self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
+                         (self.data['enabled_add'],self.data['enabled_sub'],self.data['enabled_mul'],
+                          self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -129,6 +178,9 @@ class EquationsConfig:
 
     def getMaximumBears(self):
         return self.data['maximum_bears']
+
+    def isEnabled(self, key):
+        return self.data[key]
 
 class Stop(QtGui.QWidget):
     def __init__(self,args):
@@ -146,7 +198,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, maximum_value, maximum_bears):
+    def __init__(self,args, enabled_add, enabled_sub, enabled_mul,maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -158,12 +210,15 @@ class Equation(QtGui.QWidget):
         self.lenBaseText = []
         # For maximum operation value of 0, we do not make a equations
         if maximum_value != 0:
-            self.tasks.append(self.makeRandomEquation("+",maximum_value))
-            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
-            self.tasks.append(self.makeRandomEquation("-",maximum_value))
-            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
-            self.tasks.append(self.makeRandomEquation("*",maximum_value))
-            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+            if enabled_add:
+                self.tasks.append(self.makeRandomEquation("+",maximum_value))
+                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+            if enabled_sub:
+                self.tasks.append(self.makeRandomEquation("-",maximum_value))
+                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+            if enabled_mul:
+                self.tasks.append(self.makeRandomEquation("*",maximum_value))
+                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
         
         if maximum_bears != 0:
             self.tasks.append(self.makeRandomEquation("?",maximum_bears))
@@ -215,6 +270,9 @@ class Equation(QtGui.QWidget):
             b = matMaxValue
             while a * b > matMaxValue and b >0:
                b = b - 1 
+            # After finding maximal coefficient of multiplication
+            # choose randomly among minimal (0) and maximal (the one found)
+            b = random.randint(0,b)
             equation_string=str(a)+"*"+str(b)+"="
         elif matop == "?":
             a = random.randint(1,matMaxValue)
@@ -296,6 +354,16 @@ parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_count
 parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
 parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
 parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
+# Add
+parser.add_argument("--enable_add", help="Enable Adding riddle", action="store_true")
+parser.add_argument("--disable_add", help="Disable Adding riddle", action="store_true")
+# Sub
+parser.add_argument("--enable_sub", help="Enable Subtracting riddle", action="store_true")
+parser.add_argument("--disable_sub", help="Disable Subtracting riddle", action="store_true")
+# Mul
+parser.add_argument("--enable_mul", help="Enable Multiplication riddle", action="store_true")
+parser.add_argument("--disable_mul", help="Disable Multiplication riddle", action="store_true")
+
 args = parser.parse_args()
 config = EquationsConfig(args)
 
@@ -304,7 +372,12 @@ if config.shouldTerminate() == True:
 
 app = QtGui.QApplication(sys.argv)
 if config.shouldRun() == True:
-    rownanko = Equation(args,config.getMaximumValue(),config.getMaximumBears())       # some initialization has to be done
+    rownanko = Equation(args,
+                        config.isEnabled('enabled_add'),
+                        config.isEnabled('enabled_sub'),
+                        config.isEnabled('enabled_mul'),
+                        config.getMaximumValue(),
+                        config.getMaximumBears())       # some initialization has to be done
 else:
     print "Daily limit exhausted" 
     stop = Stop(args)    
