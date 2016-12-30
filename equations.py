@@ -12,11 +12,12 @@ from os.path import expanduser
 import datetime
 import argparse
 import time
+import math
 
 # TODO:
 # limit of two houres per day
 # commandline line support: setting equationsconfig , run without shutdown, netflix
-# commandline: show current config
+# commandline : enable/disable_{add,sub,div,mul}
 # relative positioning of images
 # positioning a medal so it put along bottom edge not on fixed position
 # config: one time session length, day limit, ULR to open
@@ -161,6 +162,8 @@ class Equation(QtGui.QWidget):
             self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
             self.tasks.append(self.makeRandomEquation("-",maximum_value))
             self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+            self.tasks.append(self.makeRandomEquation("*",maximum_value))
+            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
         
         if maximum_bears != 0:
             self.tasks.append(self.makeRandomEquation("?",maximum_bears))
@@ -206,6 +209,13 @@ class Equation(QtGui.QWidget):
             a = random.randint(matMaxValue/2,matMaxValue)
             b = random.randint(0,matMaxValue/2)
             equation_string=str(a)+"-"+str(b)+"="
+        elif matop == "*":
+            # a = sqrt(Max) , b_i+1 = a*b_i <= max
+            a = random.randint(0,int(math.sqrt(matMaxValue)))
+            b = matMaxValue
+            while a * b > matMaxValue and b >0:
+               b = b - 1 
+            equation_string=str(a)+"*"+str(b)+"="
         elif matop == "?":
             a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
@@ -268,6 +278,8 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1] + self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "-":
             computed_result = self.tasks[self.iter][1] - self.tasks[self.iter][2]
+        elif self.tasks[self.iter][3] == "*":
+            computed_result = self.tasks[self.iter][1] * self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "?":
             computed_result = self.tasks[self.iter][1]
         # compare typed result with computed result
