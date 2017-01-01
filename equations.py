@@ -210,14 +210,19 @@ class Equation(QtGui.QWidget):
         self.lenBaseText = []
         # For maximum operation value of 0, we do not make a equations
         if maximum_value != 0:
+            operations = ['+','-','*']
+            operations = []
             if enabled_add:
-                self.tasks.append(self.makeRandomEquation("+",maximum_value))
-                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+                operations.append('+')
             if enabled_sub:
-                self.tasks.append(self.makeRandomEquation("-",maximum_value))
-                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+                operations.append('-')
             if enabled_mul:
-                self.tasks.append(self.makeRandomEquation("*",maximum_value))
+                operations.append('*')
+           
+            while len(operations) > 0 : 
+                operation = random.choice(operations)
+                operations.remove(operation)
+                self.tasks.append(self.makeRandomEquation(operation,maximum_value))
                 self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
         
         if maximum_bears != 0:
