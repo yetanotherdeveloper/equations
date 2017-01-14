@@ -28,7 +28,7 @@ import math
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'enabled_add' : True, 'enabled_sub' : True,'enabled_mul' : True,'enabled_div' : True,
+        self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1,
                       'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
@@ -44,60 +44,32 @@ class EquationsConfig:
             self.data = pickle.load(configFile)
 
             # Add
-            if args.enable_add == True:
-                self.data['enabled_add'] = True
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            if args.disable_add == True:
-                self.data['enabled_add'] = False
+            if args.set_num_adds > -1:
+                self.data['num_adds'] = args.set_num_adds
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
                 pickle.dump(self.data,configFile)
                 return;
             # Sub
-            if args.enable_sub == True:
-                self.data['enabled_sub'] = True
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            if args.disable_sub == True:
-                self.data['enabled_sub'] = False
+            if args.set_num_subs > -1:
+                self.data['num_subs'] = args.set_num_subs
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
                 pickle.dump(self.data,configFile)
                 return;
             # Mul
-            if args.enable_mul == True:
-                self.data['enabled_mul'] = True
+            if args.set_num_muls > -1:
+                self.data['num_muls'] = args.set_num_muls
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
                 pickle.dump(self.data,configFile)
                 return;
-            if args.disable_mul == True:
-                self.data['enabled_mul'] = False
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            # Div
-            if args.enable_div == True:
-                self.data['enabled_div'] = True
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            if args.disable_div == True:
-                self.data['enabled_div'] = False
+           # Div
+            if args.set_num_divs > -1:
+                self.data['num_divs'] = args.set_num_divs
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -169,17 +141,17 @@ class EquationsConfig:
 
     def print_config(self):
         print(""" Configuration: 
-                        enabled_add: %r
-                        enabled_sub: %r
-                        enabled_mul: %r
-                        enabled_div: %r
+                        num_adds: %d
+                        num_subs: %d
+                        num_muls: %d
+                        num_divs: %d
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
                         maximum_value: %d
                         maximum_bears: %d
                                     """ %
-                         (self.data['enabled_add'],self.data['enabled_sub'],self.data['enabled_mul'],self.data['enabled_div'],
+                         (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
                           self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
@@ -214,7 +186,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, enabled_add, enabled_sub, enabled_mul, enabled_div, maximum_value, maximum_bears):
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -228,13 +200,14 @@ class Equation(QtGui.QWidget):
         if maximum_value != 0:
             operations = ['+','-','*']
             operations = []
-            if enabled_add:
+            
+            for i in range(0,num_adds):
                 operations.append('+')
-            if enabled_sub:
+            for i in range(0,num_subs):
                 operations.append('-')
-            if enabled_mul:
+            for i in range(0,num_muls):
                 operations.append('*')
-            if enabled_div:
+            for i in range(0,num_divs):
                 operations.append('/')
            
             while len(operations) > 0 : 
@@ -384,18 +357,11 @@ parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_count
 parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
 parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
 parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
-# Add
-parser.add_argument("--enable_add", help="Enable Adding riddle", action="store_true")
-parser.add_argument("--disable_add", help="Disable Adding riddle", action="store_true")
-# Sub
-parser.add_argument("--enable_sub", help="Enable Subtracting riddle", action="store_true")
-parser.add_argument("--disable_sub", help="Disable Subtracting riddle", action="store_true")
-# Mul
-parser.add_argument("--enable_mul", help="Enable Multiplication riddle", action="store_true")
-parser.add_argument("--disable_mul", help="Disable Multiplication riddle", action="store_true")
-# Div
-parser.add_argument("--enable_div", help="Enable Division riddle", action="store_true")
-parser.add_argument("--disable_div", help="Disable Division riddle", action="store_true")
+# Number of specific riddles
+parser.add_argument("--set_num_adds", help="Number of Adding riddles", type=int, default=-1)
+parser.add_argument("--set_num_subs", help="Number of Subtracting riddles", type=int, default=-1)
+parser.add_argument("--set_num_muls", help="Number of Multiplication riddles", type=int, default=-1)
+parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
 
 args = parser.parse_args()
 config = EquationsConfig(args)
@@ -406,10 +372,10 @@ if config.shouldTerminate() == True:
 app = QtGui.QApplication(sys.argv)
 if config.shouldRun() == True:
     rownanko = Equation(args,
-                        config.isEnabled('enabled_add'),
-                        config.isEnabled('enabled_sub'),
-                        config.isEnabled('enabled_mul'),
-                        config.isEnabled('enabled_div'),
+                        config.isEnabled('num_adds'),
+                        config.isEnabled('num_subs'),
+                        config.isEnabled('num_muls'),
+                        config.isEnabled('num_divs'),
                         config.getMaximumValue(),
                         config.getMaximumBears())       # some initialization has to be done
 else:
