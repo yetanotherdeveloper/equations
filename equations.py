@@ -17,7 +17,7 @@ import math
 # TODO:
 # limit of two houres per day
 # commandline line support: setting equationsconfig , run without shutdown, netflix
-# commandline : enable/disable_{add,sub,div,mul}
+# commandline : change enabe to quantity equations of given kind
 # config: one time session length, ULR to open
 # division fibonacci, derivatives
 # Open netflix in kids profile
@@ -28,7 +28,7 @@ import math
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'enabled_add' : True, 'enabled_sub' : True,'enabled_mul' : True,
+        self.data = { 'enabled_add' : True, 'enabled_sub' : True,'enabled_mul' : True,'enabled_div' : True,
                       'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
@@ -83,6 +83,21 @@ class EquationsConfig:
                 return;
             if args.disable_mul == True:
                 self.data['enabled_mul'] = False
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            # Div
+            if args.enable_div == True:
+                self.data['enabled_div'] = True
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+            if args.disable_div == True:
+                self.data['enabled_div'] = False
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -157,13 +172,14 @@ class EquationsConfig:
                         enabled_add: %r
                         enabled_sub: %r
                         enabled_mul: %r
+                        enabled_div: %r
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
                         maximum_value: %d
                         maximum_bears: %d
                                     """ %
-                         (self.data['enabled_add'],self.data['enabled_sub'],self.data['enabled_mul'],
+                         (self.data['enabled_add'],self.data['enabled_sub'],self.data['enabled_mul'],self.data['enabled_div'],
                           self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
@@ -198,7 +214,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, enabled_add, enabled_sub, enabled_mul,maximum_value, maximum_bears):
+    def __init__(self,args, enabled_add, enabled_sub, enabled_mul, enabled_div, maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -218,6 +234,8 @@ class Equation(QtGui.QWidget):
                 operations.append('-')
             if enabled_mul:
                 operations.append('*')
+            if enabled_div:
+                operations.append('/')
            
             while len(operations) > 0 : 
                 operation = random.choice(operations)
@@ -279,6 +297,11 @@ class Equation(QtGui.QWidget):
             # choose randomly among minimal (0) and maximal (the one found)
             b = random.randint(0,b)
             equation_string=str(a)+"*"+str(b)+"="
+        elif matop == "/":
+            a = random.randint(0,matMaxValue)
+            b = 2
+            a = int(a/b) * b
+            equation_string=str(a)+"/"+str(b)+"="
         elif matop == "?":
             a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
@@ -343,6 +366,8 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1] - self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "*":
             computed_result = self.tasks[self.iter][1] * self.tasks[self.iter][2]
+        elif self.tasks[self.iter][3] == "/":
+            computed_result = self.tasks[self.iter][1] / self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "?":
             computed_result = self.tasks[self.iter][1]
         # compare typed result with computed result
@@ -368,6 +393,9 @@ parser.add_argument("--disable_sub", help="Disable Subtracting riddle", action="
 # Mul
 parser.add_argument("--enable_mul", help="Enable Multiplication riddle", action="store_true")
 parser.add_argument("--disable_mul", help="Disable Multiplication riddle", action="store_true")
+# Div
+parser.add_argument("--enable_div", help="Enable Division riddle", action="store_true")
+parser.add_argument("--disable_div", help="Disable Division riddle", action="store_true")
 
 args = parser.parse_args()
 config = EquationsConfig(args)
@@ -381,6 +409,7 @@ if config.shouldRun() == True:
                         config.isEnabled('enabled_add'),
                         config.isEnabled('enabled_sub'),
                         config.isEnabled('enabled_mul'),
+                        config.isEnabled('enabled_div'),
                         config.getMaximumValue(),
                         config.getMaximumBears())       # some initialization has to be done
 else:
