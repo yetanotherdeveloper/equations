@@ -9,6 +9,7 @@ import subprocess
 import os
 import pickle
 from os.path import expanduser 
+from os import listdir
 import datetime
 import argparse
 import time
@@ -16,8 +17,6 @@ import math
 
 # TODO:
 # limit of two houres per day
-# commandline line support: setting equationsconfig , run without shutdown, netflix
-# commandline : change enabe to quantity equations of given kind
 # config: one time session length, ULR to open
 # division fibonacci, derivatives
 # Open netflix in kids profile
@@ -28,7 +27,7 @@ import math
 class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1,
+        self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
                       'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
@@ -70,6 +69,15 @@ class EquationsConfig:
            # Div
             if args.set_num_divs > -1:
                 self.data['num_divs'] = args.set_num_divs
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+           # Language Puzzles
+            if args.set_num_lang_puzzles > -1:
+                self.data['num_lang_puzzles'] = args.set_lang_puzzles
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -145,6 +153,7 @@ class EquationsConfig:
                         num_subs: %d
                         num_muls: %d
                         num_divs: %d
+                        num_lang_puzzles: %d
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
@@ -152,7 +161,7 @@ class EquationsConfig:
                         maximum_bears: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-                          self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
+self.data['num_lang_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -186,12 +195,13 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, maximum_value, maximum_bears):
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
         self.args = args
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
+        self.images = self.resourcesPath + "/data/images/"
         self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
         self.tasks = []
         self.tempImages = []
@@ -209,6 +219,9 @@ class Equation(QtGui.QWidget):
                 operations.append('*')
             for i in range(0,num_divs):
                 operations.append('/')
+            # Add num_lang_puzzles param
+            for i in range(0,num_lang_puzzles):
+                operations.append('lang')
            
             while len(operations) > 0 : 
                 operation = random.choice(operations)
@@ -275,11 +288,15 @@ class Equation(QtGui.QWidget):
             b = 2
             a = int(a/b) * b
             equation_string=str(a)+"/"+str(b)+"="
+        # Draw bears
         elif matop == "?":
             a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
             equation_string="Ile? ="
-            # Draw bears
+        elif matop == "lang":
+            image = self.prepareTestData(self.images)
+            # TODO everything        
+            
         return (equation_string, a, b, matop)
 
     def keyPressEvent(self, e):
@@ -349,36 +366,72 @@ class Equation(QtGui.QWidget):
         else:
             return False
 
+    def prepareTestData(self, imagesDirPath):
+        """# Load images randomly
+         os listdir , choose randomyl 3 files
+         diffrent ones, then one should be read eg. image loaded
+         and printed, other just need as invalid answer
+         proper answer randomyl to be set and storedc"""
+        # TODO: make sure it is only files not directories
+        imagesNames = listdir(imagesDirPath)
+        # Get Randomly imagename to be proper answer and its picture
+        correctOneName = random.choice(imagesNames)
+        correctPicture = QtGui.QLabel(self)
+        # TODO: put this in the middle
+        correctPicture.setGeometry(300,100,200,200)
+        correctPicture.setPixmap(QtGui.QPixmap(correctOneName))
+        # Here is name of animal that corresspond to picture
+        correctAnimalName = correctOneName.replace("-wt","").replace("-vt","")
+        incorrectAnimalName1, incorrectAnimalName2 = getIncorrectAnswers(imagesNames, correctOneName)
+
+        printf("Good image: %s  good answer: %s, bad answer1 %s, bad answe2: %s" % 
+            (correctOneName,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2))
+
+    def getIncorrectAnswers(self, imagesNames, correctAnswer):
+        """ Get Name of animal different from given correctAnswer"""
+        badPool = imagesNames
+        badPool.remove(correctAnswer)
+        firstBadAnswer = random.choice(badPool)
+        badPool.remove(firstBadAnswer)
+        firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-v.gift","")                
+        secondBadAnswer = random.choice(badPool)
+        badPool.remove(secondBadAnswer)
+        secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","")
+        return firstBadAnswer,secondBadAnswer
+
 # main function starts here        
-parser = argparse.ArgumentParser()
-parser.add_argument("--print_config", help="Print configuration file", action="store_true")
-parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=-1)
-parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=-1)
-parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
-parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
-parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
-# Number of specific riddles
-parser.add_argument("--set_num_adds", help="Number of Adding riddles", type=int, default=-1)
-parser.add_argument("--set_num_subs", help="Number of Subtracting riddles", type=int, default=-1)
-parser.add_argument("--set_num_muls", help="Number of Multiplication riddles", type=int, default=-1)
-parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--print_config", help="Print configuration file", action="store_true")
+    parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=-1)
+    parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=-1)
+    parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
+    parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
+    parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
+    # Number of specific riddles
+    parser.add_argument("--set_num_adds", help="Number of Adding riddles", type=int, default=-1)
+    parser.add_argument("--set_num_subs", help="Number of Subtracting riddles", type=int, default=-1)
+    parser.add_argument("--set_num_muls", help="Number of Multiplication riddles", type=int, default=-1)
+    parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
+    parser.add_argument("--set_num_lang_puzzles", help="Number of Language riddles", type=int, default=-1)
 
-args = parser.parse_args()
-config = EquationsConfig(args)
+    args = parser.parse_args()
+    config = EquationsConfig(args)
 
-if config.shouldTerminate() == True:
-    exit()
+    if config.shouldTerminate() == True:
+        exit()
 
-app = QtGui.QApplication(sys.argv)
-if config.shouldRun() == True:
-    rownanko = Equation(args,
-                        config.isEnabled('num_adds'),
-                        config.isEnabled('num_subs'),
-                        config.isEnabled('num_muls'),
-                        config.isEnabled('num_divs'),
-                        config.getMaximumValue(),
-                        config.getMaximumBears())       # some initialization has to be done
-else:
-    print "Daily limit exhausted" 
-    stop = Stop(args)    
-sys.exit(app.exec_())
+    app = QtGui.QApplication(sys.argv)
+    if config.shouldRun() == True:
+        rownanko = Equation(args,
+                            config.isEnabled('num_adds'),
+                            config.isEnabled('num_subs'),
+                            config.isEnabled('num_muls'),
+                            config.isEnabled('num_divs'),
+                            config.isEnabled('num_lang_puzzles'),
+                            config.getMaximumValue(),
+                            config.getMaximumBears())       # some initialization has to be done
+    else:
+        print "Daily limit exhausted" 
+        stop = Stop(args)    
+    sys.exit(app.exec_())
