@@ -16,12 +16,10 @@ import time
 import math
 
 # TODO:
-# limit of two houres per day
 # config: one time session length, ULR to open
 # division fibonacci, derivatives
 # Open netflix in kids profile
 # MAke a function with setting comnmandline (avoid copy paste)
-# Make unit test (pytest)
 
 # Class to define object for serialization eg.
 class EquationsConfig:
@@ -205,6 +203,9 @@ class Equation(QtGui.QWidget):
         self.tasks = []
         self.tempImages = []
         self.lenBaseText = []
+        self.pixmaps = []   # Pixmap to be set on Label
+        self.sizeOfAnimal = self.geometry().height()/3
+        self.visualized = False
         # For maximum operation value of 0, we do not make a equations
         if maximum_value != 0:
             operations = ['+','-','*']
@@ -238,8 +239,9 @@ class Equation(QtGui.QWidget):
         qp.begin(self)
         self.drawText(event, qp)
         qp.end()
-        if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and len(self.tempImages) == 0:
+        if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and self.visualized == False:
             sizeOfBear = 200
+            self.tempImages = []
             for pos in range(0,self.tasks[self.iter][1]):
                 pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
                 x = self.geometry().x()
@@ -255,11 +257,30 @@ class Equation(QtGui.QWidget):
                 pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
                 pic.show()
                 self.tempImages.append(pic)
+                self.visualized = True
+        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
+            # TODO: put this in the middle
+            self.pixmaps[0] = self.pixmaps[0].scaledToWidth(self.sizeOfAnimal)
+            self.hideImages(self.tempImages)
+            self.tempImages = []
+            pic = QtGui.QLabel(self)
+            startx = self.geometry().width()/2 - self.sizeOfAnimal/2
+#            starty = sizeOfAnimal/2# + 3*self.geometry().height()/4
+            starty = 0# + 3*self.geometry().height()/4
+            pic.setGeometry(startx,starty,self.sizeOfAnimal,self.sizeOfAnimal)
+            pic.setPixmap(self.pixmaps[0])
+            pic.show()
+            self.tempImages.append(pic)
+            self.visualized = True
         self.update()
 
     def drawText(self, event, qp):
         qp.setPen(QtGui.QColor(0,0,255))
-        qp.setFont(QtGui.QFont('Decorative',200))
+        if self.tasks[self.iter][3] == "lang":
+            qp.setFont(QtGui.QFont('Decorative',50))
+        else:
+            qp.setFont(QtGui.QFont('Decorative',200))
+
         if self.iter < len(self.tasks):
             qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.tasks[self.iter][0])
 
@@ -293,12 +314,21 @@ class Equation(QtGui.QWidget):
             b = random.randint(0,0)
             equation_string="Ile? ="
         elif matop == "lang":
-            image, goodAnswer, badAnswer1, badAnswer2 = self.prepareTestData(self.images)
-            # TODO everything        
-            a = 0
+            badAnswers = ["",""]
+            picture, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
+            self.pixmaps.append(picture)
+            # TODO Remeber which answer is proper one        
+            a = random.randint(1,3)
             b = 1
-            equation_string="0) = " + goodAnswer
-            
+            equation_string = ""
+            baddies_index = 0
+            for i in range(1,4):
+                if i == a:
+                    equation_string+=str(i) + ") " + goodAnswer +"\n"
+                else:
+                    equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
+                    baddies_index +=1
+            equation_string += "\n\nOdpowiedz: " 
             
         return (equation_string, a, b, matop)
 
@@ -334,6 +364,8 @@ class Equation(QtGui.QWidget):
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
                     self.iter+=1
+                    self.visualized=False
+                    self.hideImages(self.tempImages)
                     if self.iter == len(self.tasks):
                         if self.args.dry_run == False:
                             subprocess.call(["sudo","shutdown","-h","+30"])
@@ -346,6 +378,9 @@ class Equation(QtGui.QWidget):
                     self.voices['failure'].play() 
                 
             self.update()
+    def hideImages(self,widgets):
+        for widget in widgets:
+            widget.setHidden(True)
 
     def validateEquation(self):
         # Get result typed and convert it to number
@@ -363,6 +398,8 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1] / self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "?":
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "lang":
+            computed_result = self.tasks[self.iter][1]
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
@@ -379,14 +416,11 @@ class Equation(QtGui.QWidget):
         imagesNames = listdir(imagesDirPath)
         # Get Randomly imagename to be proper answer and its picture
         correctOneName = random.choice(imagesNames)
-        correctPicture = QtGui.QLabel(self)
-        # TODO: put this in the middle
-        correctPicture.setGeometry(300,100,200,200)
-        correctPicture.setPixmap(QtGui.QPixmap(imagesDirPath +"/"+ correctOneName))
+        picture = QtGui.QPixmap(imagesDirPath +"/"+ correctOneName)
         # Here is name of animal that corresspond to picture
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
-        return correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
+        return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
     def getIncorrectAnswers(self, imagesNames, correctAnswer):
         """ Get Name of animal different from given correctAnswer"""

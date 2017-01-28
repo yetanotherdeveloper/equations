@@ -20,14 +20,6 @@ def test_prepareTestData(qtbot):
     imagesPath = os.path.realpath(__file__).replace("test_equations.py","") + "/data/images/"
     qtbot.addWidget(eqobj)
     correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2 = eqobj.prepareTestData(imagesPath)
+    assert((correctAnimalName != incorrectAnimalName1) and(correctAnimalName != incorrectAnimalName2)) 
 
-#    image = QtGui.QLabel()
-#    image.setGeometry(300,100,200,200)
-#    import pdb; pdb.set_trace()
-#    image.setPixmap(QtGui.QPixmap("data/images/bear-wt.gifsdf"))
-#    qtbot.addWidget(image)
-#    image.show()
-
-
-    assert(3 * 4 == 12)
     
