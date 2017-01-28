@@ -20,7 +20,6 @@ import math
 # division fibonacci, derivatives
 # Open netflix in kids profile
 # MAke a function with setting comnmandline (avoid copy paste)
-#sound , make release wiyh images
 
 # Class to define object for serialization eg.
 class EquationsConfig:
