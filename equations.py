@@ -20,6 +20,7 @@ import math
 # division fibonacci, derivatives
 # Open netflix in kids profile
 # MAke a function with setting comnmandline (avoid copy paste)
+#sound , make release wiyh images
 
 # Class to define object for serialization eg.
 class EquationsConfig:
@@ -319,7 +320,7 @@ class Equation(QtGui.QWidget):
             self.pixmaps.append(picture)
             # TODO Remeber which answer is proper one        
             a = random.randint(1,3)
-            b = 1
+            b = self.addPrefix(goodAnswer)
             equation_string = ""
             baddies_index = 0
             for i in range(1,4):
@@ -363,6 +364,11 @@ class Equation(QtGui.QWidget):
                     pic.show()
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
+                    self.say("Correct!")
+                    if self.tasks[self.iter][3] == "lang":
+                        time.sleep(1)
+                        self.say("This is " + self.tasks[self.iter][2])
+                        time.sleep(1)
                     self.iter+=1
                     self.visualized=False
                     self.hideImages(self.tempImages)
@@ -375,7 +381,7 @@ class Equation(QtGui.QWidget):
                         else:
                             exit()
                 else:
-                    self.voices['failure'].play() 
+                    self.say("Wrong!")
                 
             self.update()
     def hideImages(self,widgets):
@@ -433,6 +439,14 @@ class Equation(QtGui.QWidget):
         badPool.remove(secondBadAnswer)
         secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","")
         return firstBadAnswer,secondBadAnswer
+
+    def say(self, text):
+        subprocess.Popen(["espeak","-s 150",text])
+    def addPrefix(self, text):
+        if text[0] =='a' or text[0] =='u' or text[0] =='i' or text[0] =='e' or text[0] =='y' or text[0] =='o':
+           return "an " + text 
+        else:
+            return "a " + text
 
 # main function starts here        
 if __name__ == "__main__":
