@@ -36,7 +36,6 @@ class EquationsConfig:
         # if data is present then read counter 
         # if counter meets maximum then prevent from watching
         # If counter is not in maximal state then increment 
-        #import pdb; pdb.set_trace()
         configDir = expanduser("~")+"/.equations/" 
         if os.path.isfile(configDir+"config"):
             configFile = open(configDir+"config","r")
@@ -294,8 +293,12 @@ class Equation(QtGui.QWidget):
             b = random.randint(0,0)
             equation_string="Ile? ="
         elif matop == "lang":
-            image = self.prepareTestData(self.images)
+            image, goodAnswer, badAnswer1, badAnswer2 = self.prepareTestData(self.images)
             # TODO everything        
+            a = 0
+            b = 1
+            equation_string="0) = " + goodAnswer
+            
             
         return (equation_string, a, b, matop)
 
@@ -371,7 +374,7 @@ class Equation(QtGui.QWidget):
          os listdir , choose randomyl 3 files
          diffrent ones, then one should be read eg. image loaded
          and printed, other just need as invalid answer
-         proper answer randomyl to be set and storedc"""
+         proper answer randomly to be set and storedc"""
         # TODO: make sure it is only files not directories
         imagesNames = listdir(imagesDirPath)
         # Get Randomly imagename to be proper answer and its picture
@@ -379,13 +382,11 @@ class Equation(QtGui.QWidget):
         correctPicture = QtGui.QLabel(self)
         # TODO: put this in the middle
         correctPicture.setGeometry(300,100,200,200)
-        correctPicture.setPixmap(QtGui.QPixmap(correctOneName))
+        correctPicture.setPixmap(QtGui.QPixmap(imagesDirPath +"/"+ correctOneName))
         # Here is name of animal that corresspond to picture
-        correctAnimalName = correctOneName.replace("-wt","").replace("-vt","")
-        incorrectAnimalName1, incorrectAnimalName2 = getIncorrectAnswers(imagesNames, correctOneName)
-
-        printf("Good image: %s  good answer: %s, bad answer1 %s, bad answe2: %s" % 
-            (correctOneName,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2))
+        correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","")
+        incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
+        return correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
     def getIncorrectAnswers(self, imagesNames, correctAnswer):
         """ Get Name of animal different from given correctAnswer"""
@@ -393,7 +394,7 @@ class Equation(QtGui.QWidget):
         badPool.remove(correctAnswer)
         firstBadAnswer = random.choice(badPool)
         badPool.remove(firstBadAnswer)
-        firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-v.gift","")                
+        firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-vt.gif","")                
         secondBadAnswer = random.choice(badPool)
         badPool.remove(secondBadAnswer)
         secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","")
