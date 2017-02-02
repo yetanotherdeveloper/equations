@@ -353,13 +353,13 @@ class Equation(QtGui.QWidget):
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
                     # Put medals starting from bottom left
-                    pic = QtGui.QLabel(self)
+                    pic = QtSvg.QSvgWidget(self.resourcesPath + "/medal.svg", self)
                     x = self.geometry().x()
                     y = self.geometry().y()
                     width = self.geometry().width()
                     height = self.geometry().height()
-                    pic.setGeometry(x+self.iter*300,y + height - 300,300,300)
-                    pic.setPixmap(QtGui.QPixmap( self.resourcesPath + "/smiley300.png"))
+                    sizeOfMedal = height/4
+                    pic.setGeometry(x+self.iter*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
                     pic.show()
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
