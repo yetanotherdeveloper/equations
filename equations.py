@@ -266,8 +266,7 @@ class Equation(QtGui.QWidget):
             self.tempImages = []
             pic = QtGui.QLabel(self)
             startx = self.geometry().width()/2 - self.sizeOfAnimal/2
-#            starty = sizeOfAnimal/2# + 3*self.geometry().height()/4
-            starty = 0# + 3*self.geometry().height()/4
+            starty = 0
             pic.setGeometry(startx,starty,self.sizeOfAnimal,self.sizeOfAnimal)
             pic.setPixmap(self.pixmaps[0])
             pic.show()
@@ -363,8 +362,6 @@ class Equation(QtGui.QWidget):
                     height = self.geometry().height()
                     sizeOfMedal = height/4
                     # Put medals starting from bottom left
-                    print("num_group=%d num_medals=%d\n" %(num_groups_medals,num_medals))
-                    # TODO : nadpisywane sa medale, poprawic
                     group_idx = num_groups_medals
                     idx = 0
                     self.hideImages(self.tempMedals)
@@ -385,11 +382,14 @@ class Equation(QtGui.QWidget):
 
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
-                    self.say("Correct!")
+                    congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!"]
+                    self.say(random.choice(congrats))
                     if self.tasks[self.iter][3] == "lang":
                         time.sleep(1)
                         self.say("This is " + self.tasks[self.iter][2])
                         time.sleep(1)
+                        self.visualized = False
+                        self.pixmaps.remove(self.pixmaps[0])
                     self.iter+=1
                     self.visualized=False
                     self.hideImages(self.tempImages)
