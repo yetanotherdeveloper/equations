@@ -74,7 +74,7 @@ class EquationsConfig:
 
            # Language Puzzles
             if args.set_num_lang_puzzles > -1:
-                self.data['num_lang_puzzles'] = args.set_lang_puzzles
+                self.data['num_lang_puzzles'] = args.set_num_lang_puzzles
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -202,6 +202,7 @@ class Equation(QtGui.QWidget):
         self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
         self.tasks = []
         self.tempImages = []
+        self.tempMedals = []
         self.lenBaseText = []
         self.pixmaps = []   # Pixmap to be set on Label
         self.sizeOfAnimal = self.geometry().height()/3
@@ -352,15 +353,36 @@ class Equation(QtGui.QWidget):
                 self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
-                    # Put medals starting from bottom left
-                    pic = QtSvg.QSvgWidget(self.resourcesPath + "/medal.svg", self)
+                    # Calculate number of group medals and single medals
+                    num_medals = self.iter + 1 
+                    num_groups_medals = num_medals/5
+                    num_medals = num_medals - num_groups_medals*5 
                     x = self.geometry().x()
                     y = self.geometry().y()
                     width = self.geometry().width()
                     height = self.geometry().height()
                     sizeOfMedal = height/4
-                    pic.setGeometry(x+self.iter*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
-                    pic.show()
+                    # Put medals starting from bottom left
+                    print("num_group=%d num_medals=%d\n" %(num_groups_medals,num_medals))
+                    # TODO : nadpisywane sa medale, poprawic
+                    group_idx = num_groups_medals
+                    idx = 0
+                    self.hideImages(self.tempMedals)
+                    self.tempMedals = []
+                    while num_groups_medals > 0:
+                        self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medals.svg", self))
+                        self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
+                        self.tempMedals[-1].show()
+                        idx = idx + 1
+                        num_groups_medals = num_groups_medals -1
+
+                    while num_medals > 0:
+                        self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medal.svg", self))
+                        self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
+                        self.tempMedals[-1].show()
+                        idx = idx + 1
+                        num_medals = num_medals - 1
+
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
                     self.say("Correct!")
@@ -372,6 +394,7 @@ class Equation(QtGui.QWidget):
                     self.visualized=False
                     self.hideImages(self.tempImages)
                     if self.iter == len(self.tasks):
+                        self.hideImages(self.tempMedals)
                         if self.args.dry_run == False:
                             subprocess.call(["sudo","shutdown","-h","+30"])
                             subprocess.Popen(["google-chrome",
