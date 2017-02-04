@@ -3,7 +3,7 @@ Simple program that aims to generate some mathematical puzzles for children and 
 
 # Prerequisite
 - python2 with pytest-qt, PyQt4
-- espeak
+- espeak or festival Text to Speech projects
 
 # License
 Copyright (c) 2016, Jacek Czaja

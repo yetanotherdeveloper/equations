@@ -382,7 +382,7 @@ class Equation(QtGui.QWidget):
 
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
-                    congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!"]
+                    congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!"]
                     self.say(random.choice(congrats))
                     if self.tasks[self.iter][3] == "lang":
                         time.sleep(1)
@@ -463,7 +463,11 @@ class Equation(QtGui.QWidget):
         return firstBadAnswer,secondBadAnswer
 
     def say(self, text):
-        subprocess.Popen(["espeak","-s 150",text])
+        # This is one is for espeak tts
+        #subprocess.Popen(["espeak","-s 150",text])
+        # this one is for festival tts
+        p1 = subprocess.Popen(["echo",text], stdout=subprocess.PIPE)
+        subprocess.Popen(["festival","--tts"], stdin=p1.stdout)
     def addPrefix(self, text):
         if text[0] =='a' or text[0] =='u' or text[0] =='i' or text[0] =='e' or text[0] =='y' or text[0] =='o':
            return "an " + text 
