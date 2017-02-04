@@ -241,7 +241,6 @@ class Equation(QtGui.QWidget):
         self.drawText(event, qp)
         qp.end()
         if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and self.visualized == False:
-            sizeOfBear = 200
             self.tempImages = []
             for pos in range(0,self.tasks[self.iter][1]):
                 pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
@@ -249,6 +248,7 @@ class Equation(QtGui.QWidget):
                 y = self.geometry().y()
                 width = self.geometry().width()
                 height = self.geometry().height()
+                sizeOfBear = width/10
                 if (pos+1)*sizeOfBear >= width:
                     posx = x+(pos+1)*sizeOfBear - width
                     posy = y+sizeOfBear
