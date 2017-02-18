@@ -207,6 +207,8 @@ class Equation(QtGui.QWidget):
         self.pixmaps = []   # Pixmap to be set on Label
         self.sizeOfAnimal = self.geometry().height()/3
         self.visualized = False
+        self.errorOnPresentTask = False # Flag indicating if was already some mistake in current puzzle
+        self.numMistakes = 0;  # Number of mistakes done
         # For maximum operation value of 0, we do not make a equations
         if maximum_value != 0:
             operations = ['+','-','*']
@@ -275,13 +277,12 @@ class Equation(QtGui.QWidget):
         self.update()
 
     def drawText(self, event, qp):
-        qp.setPen(QtGui.QColor(0,0,255))
-        if self.tasks[self.iter][3] == "lang":
-            qp.setFont(QtGui.QFont('Decorative',50))
-        else:
-            qp.setFont(QtGui.QFont('Decorative',200))
-
         if self.iter < len(self.tasks):
+            qp.setPen(QtGui.QColor(0,0,255))
+            if self.tasks[self.iter][3] == "lang":
+                qp.setFont(QtGui.QFont('Decorative',50))
+            else:
+                qp.setFont(QtGui.QFont('Decorative',200))
             qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.tasks[self.iter][0])
 
     def makeRandomEquation(self, matop, matMaxValue):
@@ -352,8 +353,14 @@ class Equation(QtGui.QWidget):
                 self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 if(self.validateEquation() == True):
+
+                    # If error was made in this answer (at some point)
+                    # then no medal is given
+                    if self.errorOnPresentTask == True:
+                        self.numMistakes += 1
+
                     # Calculate number of group medals and single medals
-                    num_medals = self.iter + 1 
+                    num_medals = self.iter + 1 - self.numMistakes; 
                     num_groups_medals = num_medals/5
                     num_medals = num_medals - num_groups_medals*5 
                     x = self.geometry().x()
@@ -382,7 +389,12 @@ class Equation(QtGui.QWidget):
 
                     self.update()
                     self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
-                    congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!"]
+                    # If there was an error in present puzzle then be less optimistic on
+                    # in congratualtions
+                    if self.errorOnPresentTask == True:
+                        congrats = ["OK!","Finally!","Approved!"]
+                    else:
+                        congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!","Awesome!"]
                     self.say(random.choice(congrats))
                     if self.tasks[self.iter][3] == "lang":
                         time.sleep(1)
@@ -393,10 +405,15 @@ class Equation(QtGui.QWidget):
                     self.iter+=1
                     self.visualized=False
                     self.hideImages(self.tempImages)
+                    self.errorOnPresentTask = False
                     if self.iter == len(self.tasks):
                         self.hideImages(self.tempMedals)
                         if self.args.dry_run == False:
-                            subprocess.call(["sudo","shutdown","-h","+30"])
+                            # Calculate time allowed for watching cartoons
+                            timeToWatch = 20 
+                            if self.iter > self.numMistakes:
+                                timeToWatch +=  (self.iter  - self.numMistakes) * 2
+                            subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
                             subprocess.Popen(["google-chrome",
                                              "--start-maximized",
                                              "--app=http://www.netflix.com"])
@@ -404,6 +421,7 @@ class Equation(QtGui.QWidget):
                             exit()
                 else:
                     self.say("Wrong!")
+                    self.errorOnPresentTask = True
                 
             self.update()
     def hideImages(self,widgets):
