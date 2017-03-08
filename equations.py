@@ -19,7 +19,8 @@ import math
 # config: one time session length, ULR to open
 # division fibonacci, derivatives
 # Open netflix in kids profile
-# MAke a function with setting comnmandline (avoid copy paste)
+# Make a function with setting comnmandline (avoid copy paste)
+# Dungeon keeper on an other game to start alternatively to netflix
 
 # Class to define object for serialization eg.
 class EquationsConfig:
@@ -274,6 +275,8 @@ class Equation(QtGui.QWidget):
             pic.show()
             self.tempImages.append(pic)
             self.visualized = True
+            time.sleep(1)
+            self.say(self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0]))
         self.update()
 
     def drawText(self, event, qp):
@@ -329,7 +332,7 @@ class Equation(QtGui.QWidget):
                 else:
                     equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
                     baddies_index +=1
-            equation_string += "\n\nOdpowiedz: " 
+            equation_string += "\n\nAnswer: " 
             
         return (equation_string, a, b, matop)
 
@@ -491,6 +494,9 @@ class Equation(QtGui.QWidget):
            return "an " + text 
         else:
             return "a " + text
+    def makeDescriptionOfLangPuzzle(self,stringToPrint):
+        """ Function that generates message to be uttered when Lang puzzle is presented"""
+        return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
 
 # main function starts here        
 if __name__ == "__main__":
