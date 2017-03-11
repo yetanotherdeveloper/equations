@@ -316,7 +316,7 @@ class Equation(QtGui.QWidget):
         elif matop == "?":
             a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
-            equation_string="Ile? ="
+            equation_string="? ="
         elif matop == "lang":
             badAnswers = ["",""]
             picture, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)

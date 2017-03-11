@@ -1,9 +1,34 @@
 # Equations 
-Simple program that aims to generate some mathematical puzzles for children and when having puzzles completed then some URL given site is launched (eg. netflix, youtube etc.). 
+Simple program that aims to generate some mathematical & language puzzles for children and when having puzzles completed then some URL given site is launched (eg. netflix, youtube etc.). 
+
+# Motivation
+Having a daughter which said "That was a very good day. I watched a lot of cartoons." , aim of this  project is to use children motivation to watch cartoons for educational purposes.
+
+# Features:
+- math puzzels: adding, substracting, multiplication, division, counting
+- language vocabulary puzzles: matching a word describing picture with appropriate picture
+- Starts a netfix via browser and set timeout for watching, then shutdowns the system
+- fully configurable:
+  - number of puzzles
+  - range of values for math puzzles 
+  - number of sessions of watching per day
+- With each solved puzzle without mistake, time for watching cartoons is increased by 2 minutes
+
+# Installation
+- Ideally this program should run in mouse-less window manager and add to startup scripts.
+- Add your children account(s) to sudoers group so at least shutdown can be executed without password 
+- install prerequisities
 
 # Prerequisite
+- google chrome
 - python2 with pytest-qt, PyQt4
-- espeak or festival Text to Speech projects
+- festival Text to Speech projects
+- accound for children with sudo priviligies to shutdown command
+- Linux OS
+
+# Screenshots
+![couting](data/screenshots/screen7.png)
+![language puzzle](data/screenshots/screen6.png)
 
 # License
 Copyright (c) 2016, Jacek Czaja
