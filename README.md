@@ -27,8 +27,14 @@ Having a daughter which said "That was a very good day. I watched a lot of carto
 - Linux OS
 
 # Screenshots
+Counting puzzle:
 ![couting](data/screenshots/screen7.png)
+Math(adding):
+![couting](data/screenshots/screen5.png)
+language puzzle:
 ![language puzzle](data/screenshots/screen6.png)
+setting maximum value for math puzzles from commandline:
+![customization](data/screenshots/screen8.png)
 
 # License
 Copyright (c) 2016, Jacek Czaja
@@ -45,6 +51,6 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Additional Notes:
-- Images comes from  UVic Humanities Computing and Media Centre and Half-Baked Software  
+- Images for language puzzles comes from  UVic Humanities Computing and Media Centre and Half-Baked Software  
 http://hcmc.uvic.ca/clipart/
 
