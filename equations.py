@@ -22,8 +22,46 @@ import math
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
 
-# Class to define object for serialization eg.
+class Maze:
+
+    class Sector:
+        def __init__(self,left,right,up,down):
+            self.visited = False
+            self.up = None  
+            self.down = None
+            self.right = None
+            self.left = None
+
+    def __init__(self, mazeHeight, mazeWidth):
+        # maze generation
+        self.width = mazeWidth
+        self.height = mazeHeight
+        self.sectors = []
+        for j in range(0,mazeHeight):
+            for i in range(0,mazeWidth):
+                self.sectors.append(
+                    self.Sector(self.calculateSectorIndex(i-1,j),
+                            self.calculateSectorIndex(i+1,j),
+                            self.calculateSectorIndex(i,j-1),
+                            self.calculateSectorIndex(i,j+1)))
+
+        self.generateMaze(mazeHeight,mazeWidth)
+
+    def generateMaze(startSector,mazeWidth,mazeHeight):
+        """ Pick a random sector and start generating"""
+        return 
+
+    def calculateSectorIndex(self, posy, posx):
+        if posx < 0 or posx >= self.width:
+            return -1
+        if posy < 0 or posy >= self.height:
+            return -1
+        return posy*self.width + posx 
+        
+
+
 class EquationsConfig:
+    """Class to define object for serialization"""
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,

@@ -22,4 +22,11 @@ def test_prepareTestData(qtbot):
     correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2 = eqobj.prepareTestData(imagesPath)
     assert((correctAnimalName != incorrectAnimalName1) and(correctAnimalName != incorrectAnimalName2)) 
 
-    
+#def test_generateMaze(qtbot):
+ 
+def test_calculateSectorIndex(qtbot):       
+   assert(equations.Maze(4,3).calculateSectorIndex(4,4) == -1)
+   assert(equations.Maze(4,3).calculateSectorIndex(-1,3) == -1)
+   assert(equations.Maze(4,3).calculateSectorIndex(3,2) == 11)
+   assert(equations.Maze(4,3).calculateSectorIndex(0,4) == -1)
+
