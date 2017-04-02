@@ -27,10 +27,10 @@ class Maze:
     class Sector:
         def __init__(self,left,right,up,down):
             self.visited = False
-            self.up = None  
-            self.down = None
-            self.right = None
-            self.left = None
+            self.up = up  
+            self.down = down
+            self.right = right
+            self.left = left
 
     def __init__(self, mazeHeight, mazeWidth):
         # maze generation
@@ -47,8 +47,13 @@ class Maze:
 
         self.generateMaze(mazeHeight,mazeWidth)
 
-    def generateMaze(startSector,mazeWidth,mazeHeight):
+    def generateMaze(self, mazeHeight, mazeWidth):
         """ Pick a random sector and start generating"""
+        random.seed()
+        startx = random.ranint(0,mazeWidth-1)
+        starty = random.randint(0,mazeHeight-1)
+        # Pick random location
+        self.traverseSector(starty,startx,)
         return 
 
     def calculateSectorIndex(self, posy, posx):
@@ -58,7 +63,51 @@ class Maze:
             return -1
         return posy*self.width + posx 
         
+    def traverseSector(self, posy, posx, movingDirection):
+        currentSector = self.calculateSectorIndex(posy,posx)
+        if self.sectors[currentSector].visited == True or currentSector == -1:
+            return
 
+        # mark sector as visited
+        self.sectors[currentSector].visited = True
+        
+        # put into this sector where we came from 
+        noGoDirection = "none"
+        if movingDirection == "none":
+        elif movingDirection == "left":
+            # if we moved left then previous sector is on the right and we do not go right
+            self.sectors[currentSector].right = self.sectors[currentSector].right *(-1)
+            noGoDirection = "right"
+        elif movingDirection == "right":
+            self.sectors[currentSector].left = self.sectors[currentSector].left *(-1)
+            noGoDirection = "left"
+        elif movingDirection == "up":
+            self.sectors[currentSector].down = self.sectors[currentSector].down *(-1)
+            noGoDirection = "down"
+        elif movingDirection == "down":
+            self.sectors[currentSector].up = self.sectors[currentSector].up *(-1)
+            noGoDirection = "up"
+        
+        # Choose next sector from does not visited
+        directions = ["left","right","up","down"]
+        directions.remove(noGoDirection)
+        while len(directions) > 0:
+            directon = random.choice(directions)
+            directions.remove(direction)
+            if direction == "left":
+                nextPosX = posx-1
+                nextPosY = posy
+            elif  direction == "right":
+                nextPosX = posx+1
+                nextPosY = posy
+            elif  direction == "up":
+                nextPosX = posx
+                nextPosY = posy-1
+            elif  direction == "down":
+                nextPosX = posx
+                nextPosY = posy+1
+
+            self.traverseSector(nextPosY,nextPosX,direction)
 
 class EquationsConfig:
     """Class to define object for serialization"""
