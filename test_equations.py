@@ -32,5 +32,43 @@ def testCalculateSectorIndex(qtbot):
 
 def testClearSectors(qtbot):
     testMaze = equations.Maze(3,3)    
+    refTestMaze = equations.Maze(3,3)    
+    assert(refTestMaze.width == 3) 
+    assert(refTestMaze.height == 3) 
+    # Fill the sectors with some data 
+    # corressponding to one that may be generated
+    testMaze.sectors[0] = equations.Maze.Sector(left = "none" ,right = -1, up = "none", down = 3)
+    testMaze.sectors[1] = equations.Maze.Sector(left = 0 ,right = -2, up = "none", down = 4)
+    testMaze.sectors[2] = equations.Maze.Sector(left = -1 ,right = "none", up = "none", down = -5)
+    testMaze.sectors[3] = equations.Maze.Sector(left = "none" ,right = -4, up = 0, down = -6)
+    testMaze.sectors[4] = equations.Maze.Sector(left = -3 ,right = -5, up = 1, down = 7)
+    testMaze.sectors[5] = equations.Maze.Sector(left = -4 ,right = "none", up = -2, down = 8)
+    testMaze.sectors[6] =equations.Maze.Sector(left = "none" ,right = -7, up = -3, down = "none")
+    testMaze.sectors[7] =equations.Maze.Sector(left = -6 ,right = -8, up = 4, down = "none")
+    testMaze.sectors[8] = equations.Maze.Sector(left = -7 ,right = "none", up = 5, down = "none")
+    for sector in testMaze.sectors:
+        sector.visited = True
+
+    # Fill target /reference maze date
+    refTestMaze.sectors[0] = equations.Maze.Sector(left = "none" ,right = 1, up = "none", down = "none")
+    refTestMaze.sectors[1] = equations.Maze.Sector(left = 0 ,right = 2, up = "none", down = "none")
+    refTestMaze.sectors[2] = equations.Maze.Sector(left = 1 ,right = "none", up = "none", down = 5)
+    refTestMaze.sectors[3] = equations.Maze.Sector(left = "none" ,right = 4, up = 0, down = 6)
+    refTestMaze.sectors[4] = equations.Maze.Sector(left = 3 ,right = 5, up = "none", down = "none")
+    refTestMaze.sectors[5] = equations.Maze.Sector(left = 4 ,right = "none", up = 2, down = "none")
+    refTestMaze.sectors[6] =equations.Maze.Sector(left = "none" ,right = 7, up = 3, down = "none")
+    refTestMaze.sectors[7] =equations.Maze.Sector(left = 6 ,right = 8, up = "none", down = "none")
+    refTestMaze.sectors[8] = equations.Maze.Sector(left = 7 ,right = "none", up = "none", down = "none")
+    for sector in refTestMaze.sectors:
+        sector.visited = True
+
+    testMaze.clearSectors()
+
+    for i in range(0,len(testMaze.sectors)):
+        assert(testMaze.sectors[i].left == refTestMaze.sectors[i].left)
+        assert(testMaze.sectors[i].right == refTestMaze.sectors[i].right)
+        assert(testMaze.sectors[i].up == refTestMaze.sectors[i].up)
+        assert(testMaze.sectors[i].down == refTestMaze.sectors[i].down)
+        assert(testMaze.sectors[i].visited == refTestMaze.sectors[i].visited)
 
     return
