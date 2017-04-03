@@ -50,22 +50,24 @@ class Maze:
     def generateMaze(self, mazeHeight, mazeWidth):
         """ Pick a random sector and start generating"""
         random.seed()
-        startx = random.ranint(0,mazeWidth-1)
+        startx = random.randint(0,mazeWidth-1)
         starty = random.randint(0,mazeHeight-1)
         # Pick random location
-        self.traverseSector(starty,startx,)
+        self.traverseSector(starty,startx,"none")
+        # Revert all negative , and clear other fields
+        self.clearSectors()
         return 
 
     def calculateSectorIndex(self, posy, posx):
         if posx < 0 or posx >= self.width:
-            return -1
+            return "none"
         if posy < 0 or posy >= self.height:
-            return -1
+            return "none"
         return posy*self.width + posx 
         
     def traverseSector(self, posy, posx, movingDirection):
         currentSector = self.calculateSectorIndex(posy,posx)
-        if self.sectors[currentSector].visited == True or currentSector == -1:
+        if currentSector == "none" or self.sectors[currentSector].visited == True :
             return
 
         # mark sector as visited
@@ -74,6 +76,7 @@ class Maze:
         # put into this sector where we came from 
         noGoDirection = "none"
         if movingDirection == "none":
+            pass
         elif movingDirection == "left":
             # if we moved left then previous sector is on the right and we do not go right
             self.sectors[currentSector].right = self.sectors[currentSector].right *(-1)
@@ -90,9 +93,11 @@ class Maze:
         
         # Choose next sector from does not visited
         directions = ["left","right","up","down"]
-        directions.remove(noGoDirection)
+        # No point of going where we came from
+        if noGoDirection != "none":
+            directions.remove(noGoDirection)
         while len(directions) > 0:
-            directon = random.choice(directions)
+            direction = random.choice(directions)
             directions.remove(direction)
             if direction == "left":
                 nextPosX = posx-1
@@ -108,6 +113,28 @@ class Maze:
                 nextPosY = posy+1
 
             self.traverseSector(nextPosY,nextPosX,direction)
+
+    # TODO: Sector 0???
+    def clearSectors(self):
+        for sector in self.sectors:
+            assert(sector.visited == True)
+            if sector.left > 0 :    
+                sector.left = "none"
+            elif sector.left < 0:
+                sector.left = sector.left*(-1)
+            if sector.right > 0 :    
+                sector.right = "none"
+            elif sector.right < 0:
+                sector.right = sector.right*(-1)
+            if sector.up > 0 :    
+                sector.up = "none"
+            elif sector.up < 0:
+                sector.up = sector.up*(-1)
+            if sector.down > 0 :    
+                sector.down = "none"
+            elif sector.down < 0:
+                sector.down = sector.down*(-1)
+        return
 
 class EquationsConfig:
     """Class to define object for serialization"""

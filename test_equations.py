@@ -9,13 +9,13 @@ import os
 import pickle
 import time
 
-def test_getIncorrectAnswers(qtbot):
+def testGetIncorrectAnswers(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog-wt.gif")
     assert( (firstBadAnswer == "bear" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "bear"))
 
-def test_prepareTestData(qtbot):
+def testPrepareTestData(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0)
     imagesPath = os.path.realpath(__file__).replace("test_equations.py","") + "/data/images/"
     qtbot.addWidget(eqobj)
@@ -24,9 +24,13 @@ def test_prepareTestData(qtbot):
 
 #def test_generateMaze(qtbot):
  
-def test_calculateSectorIndex(qtbot):       
-   assert(equations.Maze(4,3).calculateSectorIndex(4,4) == -1)
-   assert(equations.Maze(4,3).calculateSectorIndex(-1,3) == -1)
+def testCalculateSectorIndex(qtbot):       
+   assert(equations.Maze(4,3).calculateSectorIndex(4,4) == "none")
+   assert(equations.Maze(4,3).calculateSectorIndex(-1,3) == "none")
    assert(equations.Maze(4,3).calculateSectorIndex(3,2) == 11)
-   assert(equations.Maze(4,3).calculateSectorIndex(0,4) == -1)
+   assert(equations.Maze(4,3).calculateSectorIndex(0,4) == "none")
 
+def testClearSectors(qtbot):
+    testMaze = equations.Maze(3,3)    
+
+    return
