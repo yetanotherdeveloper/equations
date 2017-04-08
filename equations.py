@@ -21,8 +21,8 @@ import math
 # Open netflix in kids profile
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
+# TODO: fix unit test so it show a maze
 
-#TODO: make paintEvent function to draw Maze
 class Maze():
 
     class Sector:
@@ -41,10 +41,10 @@ class Maze():
         for j in range(0,mazeHeight):
             for i in range(0,mazeWidth):
                 self.sectors.append(
-                    self.Sector(self.calculateSectorIndex(i-1,j),
-                            self.calculateSectorIndex(i+1,j),
-                            self.calculateSectorIndex(i,j-1),
-                            self.calculateSectorIndex(i,j+1)))
+                    self.Sector(self.calculateSectorIndex(j,i-1),
+                            self.calculateSectorIndex(j,i+1),
+                            self.calculateSectorIndex(j-1,i),
+                            self.calculateSectorIndex(j+1,i)))
 
         self.generateMaze(mazeHeight,mazeWidth)
 
@@ -415,8 +415,34 @@ class Equation(QtGui.QWidget):
         self.update()
 
     def renderMaze(self,maze, event, qp):
+        """ Draw actual labirynth based on parameter named maze"""
+        # Get dimensions of screen and adjust sector width accordingly
+        # 80% of width and height can be used for maze at maximum
+        # Sectors are squared so, choose smaller of dimensions
+        wSecLen = self.geometry().width()*0.8/maze.width
+        hSecLen = self.geometry().height()*0.8/maze.height
+        secLen = min(wSecLen,hSecLen)
+        # Get Left-top corner of maze (left top corner of sector 0)
+        startX = self.geometry().width()*0.1
+        startY = self.geometry().height()*0.1
+
         qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
-        qp.drawRect(10,15,90,100)
+        print("maze startx=%d starty=%d width=%d height=%d" %(startX,startY,maze.width,maze.height))
+        for j in range(0,maze.height):
+            for i in range(0,maze.width):
+                self.renderSector(startY+j*secLen,startX+i*secLen, secLen, maze.sectors[maze.calculateSectorIndex(j,i)],qp)
+        return
+
+    def renderSector(self, startY, startX, secLen, sector, qp):
+        print("Render sector at %d,%d\n" %(startX,startY))
+        if sector.left == "none" :    
+            qp.drawLine(startX,startY,startX,startY+secLen)
+        if sector.right == "none" :    
+            qp.drawLine(startX+secLen,startY,startX+secLen,startY+secLen)
+        if sector.up == "none":    
+            qp.drawLine(startX,startY,startX+secLen,startY)
+        if sector.down == "none" :    
+            qp.drawLine(startX,startY+secLen,startX+secLen,startY+secLen)
         return
 
     def drawText(self, event, qp):

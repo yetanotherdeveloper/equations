@@ -10,13 +10,13 @@ import pickle
 import time
 
 def testGetIncorrectAnswers(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog-wt.gif")
     assert( (firstBadAnswer == "bear" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "bear"))
 
 def testPrepareTestData(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0)
     imagesPath = os.path.realpath(__file__).replace("test_equations.py","") + "/data/images/"
     qtbot.addWidget(eqobj)
     correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2 = eqobj.prepareTestData(imagesPath)
