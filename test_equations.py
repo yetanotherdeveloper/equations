@@ -30,6 +30,22 @@ def testCalculateSectorIndex(qtbot):
    assert(equations.Maze(4,3).calculateSectorIndex(3,2) == 11)
    assert(equations.Maze(4,3).calculateSectorIndex(0,4) == "none")
 
+def testMaze(qtbot):
+#    testMaze = equations.Maze(3,3)    
+#    qtbot.addWidget(testMaze)
+#    testMaze.show()
+#    time.sleep(1)
+    class Args():
+        def __init__(self):
+            self.dry_run = "Test"
+    args = Args()
+    testStop = equations.Stop(args) 
+    testStop.show()
+    qtbot.addWidget(testStop)
+#    qtbot.waitExposed(testStop,1000)
+    qtbot.waitForWindowShown(testStop)
+    return
+
 def testClearSectors(qtbot):
     testMaze = equations.Maze(3,3)    
     refTestMaze = equations.Maze(3,3)    

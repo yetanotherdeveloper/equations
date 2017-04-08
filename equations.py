@@ -22,7 +22,8 @@ import math
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
 
-class Maze:
+#TODO: make paintEvent function to draw Maze
+class Maze():
 
     class Sector:
         def __init__(self,left,right,up,down):
@@ -46,6 +47,7 @@ class Maze:
                             self.calculateSectorIndex(i,j+1)))
 
         self.generateMaze(mazeHeight,mazeWidth)
+
 
     def generateMaze(self, mazeHeight, mazeWidth):
         """ Pick a random sector and start generating"""
@@ -141,7 +143,8 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10}
+                      'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3,
+                      'maximum_bears' : 15 , 'maximum_value' : 10}
 
         # If there is a file unpickle it
         # then check the data
@@ -190,6 +193,15 @@ class EquationsConfig:
            # Language Puzzles
             if args.set_num_lang_puzzles > -1:
                 self.data['num_lang_puzzles'] = args.set_num_lang_puzzles
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+           # Maze Puzzles
+            if args.set_num_mazes > -1:
+                self.data['num_mazes'] = args.set_num_mazes
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -266,6 +278,7 @@ class EquationsConfig:
                         num_muls: %d
                         num_divs: %d
                         num_lang_puzzles: %d
+                        num_mazes: %d
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
@@ -273,7 +286,7 @@ class EquationsConfig:
                         maximum_bears: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
+self.data['num_lang_puzzles'], self.data['num_mazes'],self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -302,12 +315,14 @@ class Stop(QtGui.QWidget):
         self.update()
         if args.dry_run == False:
             subprocess.call(["sudo","shutdown","-h","+1"])
+        elif args.dry_run == "Test":
+            pass
         else:
             exit()
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, maximum_value, maximum_bears):
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_mazes, maximum_value, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -340,6 +355,9 @@ class Equation(QtGui.QWidget):
             # Add num_lang_puzzles param
             for i in range(0,num_lang_puzzles):
                 operations.append('lang')
+            # Add num_mazes param
+            for i in range(0,num_mazes):
+                operations.append('maze')
            
             while len(operations) > 0 : 
                 operation = random.choice(operations)
@@ -356,7 +374,6 @@ class Equation(QtGui.QWidget):
         qp = QtGui.QPainter()
         qp.begin(self)
         self.drawText(event, qp)
-        qp.end()
         if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and self.visualized == False:
             self.tempImages = []
             for pos in range(0,self.tasks[self.iter][1]):
@@ -391,10 +408,19 @@ class Equation(QtGui.QWidget):
             self.visualized = True
             time.sleep(1)
             self.say(self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0]))
+        elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
+            self.renderMaze(self.tasks[self.iter][4],event,qp)
+            # Render the dynamic elements
+        qp.end()
         self.update()
 
+    def renderMaze(self,maze, event, qp):
+        qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
+        qp.drawRect(10,15,90,100)
+        return
+
     def drawText(self, event, qp):
-        if self.iter < len(self.tasks):
+        if self.iter < len(self.tasks) :
             qp.setPen(QtGui.QColor(0,0,255))
             if self.tasks[self.iter][3] == "lang":
                 qp.setFont(QtGui.QFont('Decorative',50))
@@ -403,6 +429,7 @@ class Equation(QtGui.QWidget):
             qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.tasks[self.iter][0])
 
     def makeRandomEquation(self, matop, matMaxValue):
+        data = ""   # additional data if needed
         if matop == "+":
             a = random.randint(0,matMaxValue)
             b = random.randint(0,matMaxValue-a)
@@ -447,8 +474,15 @@ class Equation(QtGui.QWidget):
                     equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
                     baddies_index +=1
             equation_string += "\n\nAnswer: " 
-            
-        return (equation_string, a, b, matop)
+        elif matop == "maze":
+            # Size of maze
+            a = 4
+            b = 4
+            # Maze is enerated here
+            equation_string = "" 
+            data = Maze(a,b) 
+
+        return (equation_string, a, b, matop,data)
 
     def keyPressEvent(self, e):
         key2str = {
@@ -563,6 +597,8 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "lang":
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "maze":
+            computed_result = self.tasks[self.iter][1]
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
@@ -627,6 +663,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_muls", help="Number of Multiplication riddles", type=int, default=-1)
     parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
     parser.add_argument("--set_num_lang_puzzles", help="Number of Language riddles", type=int, default=-1)
+    parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
 
     args = parser.parse_args()
     config = EquationsConfig(args)
@@ -642,6 +679,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_muls'),
                             config.isEnabled('num_divs'),
                             config.isEnabled('num_lang_puzzles'),
+                            config.isEnabled('num_mazes'),
                             config.getMaximumValue(),
                             config.getMaximumBears())       # some initialization has to be done
     else:

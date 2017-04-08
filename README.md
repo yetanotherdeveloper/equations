@@ -19,6 +19,12 @@ Having a daughter which said "That was a very good day. I watched a lot of carto
 - Add your children account(s) to sudoers group so at least shutdown can be executed without password 
 - install prerequisities
 
+# Testing
+Running unit tests"
+  python -m pytest -vvv test_equations.py 
+Running unit tests with dropping into debugger on failures:
+  python -m pytest -vvv test_equations.py --pdb
+
 # Prerequisite
 - google chrome
 - python2 with pytest-qt, PyQt4
