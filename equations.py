@@ -82,15 +82,23 @@ class Maze():
         elif movingDirection == "left":
             # if we moved left then previous sector is on the right and we do not go right
             self.sectors[currentSector].right = self.sectors[currentSector].right *(-1)
+            prevSector = self.calculateSectorIndex(posy,posx+1)
+            self.sectors[prevSector].left = self.sectors[prevSector].left *(-1)
             noGoDirection = "right"
         elif movingDirection == "right":
             self.sectors[currentSector].left = self.sectors[currentSector].left *(-1)
+            prevSector = self.calculateSectorIndex(posy,posx-1)
+            self.sectors[prevSector].right = self.sectors[prevSector].right *(-1)
             noGoDirection = "left"
         elif movingDirection == "up":
             self.sectors[currentSector].down = self.sectors[currentSector].down *(-1)
+            prevSector = self.calculateSectorIndex(posy+1,posx)
+            self.sectors[prevSector].up = self.sectors[prevSector].up *(-1)
             noGoDirection = "down"
         elif movingDirection == "down":
             self.sectors[currentSector].up = self.sectors[currentSector].up *(-1)
+            prevSector = self.calculateSectorIndex(posy-1,posx)
+            self.sectors[prevSector].down = self.sectors[prevSector].down *(-1)
             noGoDirection = "up"
         
         # Choose next sector from does not visited
@@ -434,7 +442,8 @@ class Equation(QtGui.QWidget):
         return
 
     def renderSector(self, startY, startX, secLen, sector, qp):
-        print("Render sector at %d,%d\n" %(startX,startY))
+        print("Render sector at %d,%d , left=%s right=%s up=%s down=%s\n" 
+            %(startX,startY,str(sector.left),str(sector.right),str(sector.up),str(sector.down)))
         if sector.left == "none" :    
             qp.drawLine(startX,startY,startX,startY+secLen)
         if sector.right == "none" :    
@@ -502,8 +511,8 @@ class Equation(QtGui.QWidget):
             equation_string += "\n\nAnswer: " 
         elif matop == "maze":
             # Size of maze
-            a = 4
-            b = 4
+            a = 8
+            b = 10
             # Maze is enerated here
             equation_string = "" 
             data = Maze(a,b) 
