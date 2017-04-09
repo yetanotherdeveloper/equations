@@ -22,6 +22,7 @@ import math
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
 # TODO: fix unit test so it show a maze
+# TODO: Render of prince and princess
 
 class Maze():
 
@@ -434,15 +435,27 @@ class Equation(QtGui.QWidget):
         startX = self.geometry().width()*0.1
         startY = self.geometry().height()*0.1
 
+        # Load a princess image
+        if self.visualized == False:
+            maze.princess = QtSvg.QSvgWidget(self.resourcesPath + "/princess.svg", self)
+            #TODO: establish princess coords
+            maze.princess.setGeometry(startX,startY,secLen,secLen)
+            maze.princess.show()
+            maze.knight = QtSvg.QSvgWidget(self.resourcesPath + "/knight.svg", self)
+            #TODO: establish knight coords
+            maze.knight.setGeometry(startX+ 4*secLen,startY+ 4*secLen,secLen,secLen)
+            maze.knight.show()
+            self.visualized = True
+
         qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
-        print("maze startx=%d starty=%d width=%d height=%d" %(startX,startY,maze.width,maze.height))
+#        print("maze startx=%d starty=%d width=%d height=%d" %(startX,startY,maze.width,maze.height))
         for j in range(0,maze.height):
             for i in range(0,maze.width):
                 self.renderSector(startY+j*secLen,startX+i*secLen, secLen, maze.sectors[maze.calculateSectorIndex(j,i)],qp)
         return
 
     def renderSector(self, startY, startX, secLen, sector, qp):
-        print("Render sector at %d,%d , left=%s right=%s up=%s down=%s\n" 
+#        print("Render sector at %d,%d , left=%s right=%s up=%s down=%s\n" 
             %(startX,startY,str(sector.left),str(sector.right),str(sector.up),str(sector.down)))
         if sector.left == "none" :    
             qp.drawLine(startX,startY,startX,startY+secLen)
