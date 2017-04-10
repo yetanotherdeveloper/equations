@@ -429,12 +429,12 @@ class Equation(QtGui.QWidget):
         # Get dimensions of screen and adjust sector width accordingly
         # 80% of width and height can be used for maze at maximum
         # Sectors are squared so, choose smaller of dimensions
-        wSecLen = self.geometry().width()*0.8/maze.width
-        hSecLen = self.geometry().height()*0.8/maze.height
+        wSecLen = self.geometry().width()*0.9/maze.width
+        hSecLen = self.geometry().height()*0.75/maze.height
         secLen = min(wSecLen,hSecLen)
         # Get Left-top corner of maze (left top corner of sector 0)
-        startX = self.geometry().width()*0.1
-        startY = self.geometry().height()*0.1
+        startX = self.geometry().width()*0.05
+        startY = self.geometry().height()*0.05
 
         # Load a princess image
         if self.visualized == False:
@@ -572,6 +572,9 @@ class Equation(QtGui.QWidget):
                 self.tasks[self.iter][4].knightPosX = knightX + 1
             # Check for success
             if(self.validateEquation() == True):
+                self.hideImages([self.tasks[self.iter][4].princess, self.tasks[self.iter][4].knight])
+                del self.tasks[self.iter][4].princess
+                del self.tasks[self.iter][4].knight
                 self.executeOnSuccess()
         return        
 
@@ -604,7 +607,6 @@ class Equation(QtGui.QWidget):
                     self.say("Wrong!")
                     self.errorOnPresentTask = True
 
-
     def executeOnSuccess(self):
         if(self.validateEquation() == True):
 
@@ -621,7 +623,7 @@ class Equation(QtGui.QWidget):
             y = self.geometry().y()
             width = self.geometry().width()
             height = self.geometry().height()
-            sizeOfMedal = height/4
+            sizeOfMedal = height/5
             # Put medals starting from bottom left
             group_idx = num_groups_medals
             idx = 0
