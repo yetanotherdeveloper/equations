@@ -439,14 +439,26 @@ class Equation(QtGui.QWidget):
         # Load a princess image
         if self.visualized == False:
             maze.princess = QtSvg.QSvgWidget(self.resourcesPath + "/princess.svg", self)
-            #TODO: establish princess coords
-            maze.princess.setGeometry(startX,startY,secLen,secLen)
             maze.princess.show()
+            maze.princessPosX = 0 #TMP
+            maze.princessPosY = 0 #TMP
             maze.knight = QtSvg.QSvgWidget(self.resourcesPath + "/knight.svg", self)
-            #TODO: establish knight coords
-            maze.knight.setGeometry(startX+ 4*secLen,startY+ 4*secLen,secLen,secLen)
             maze.knight.show()
+            maze.knightPosX = 4 #TMP
+            maze.knightPosY = 4 #TMP
             self.visualized = True
+        else:
+            #TODO: establish princess coords
+            maze.princess.setGeometry(startX+maze.princessPosX*secLen,
+                                      startY+maze.princessPosY*secLen,
+                                      secLen,
+                                      secLen)
+            #TODO: establish knight coords
+            maze.knight.setGeometry(startX+ maze.knightPosX*secLen,
+                                    startY+ maze.knightPosY*secLen,
+                                    secLen,
+                                    secLen)
+            
 
         qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
 #        print("maze startx=%d starty=%d width=%d height=%d" %(startX,startY,maze.width,maze.height))
@@ -543,7 +555,25 @@ class Equation(QtGui.QWidget):
         """ Key handling routine for maze puzzles"""
         if self.tasks[self.iter][3] != "maze":
             return
-
+        knightX = self.tasks[self.iter][4].knightPosX
+        knightY = self.tasks[self.iter][4].knightPosY
+        currentKnightSectorIndex = self.tasks[self.iter][4].calculateSectorIndex(knightY,knightX)
+        sector = self.tasks[self.iter][4].sectors[currentKnightSectorIndex]
+        
+        if(e.isAutoRepeat() != True):
+            # TODO: Move up if possible
+            # eg. if there is a sector up available
+            if e.key() == QtCore.Qt.Key_Up and sector.up != "none":
+                self.tasks[self.iter][4].knightPosY = knightY - 1
+            # TODO: move down if possible
+            elif e.key() == QtCore.Qt.Key_Down and sector.down != "none":
+                self.tasks[self.iter][4].knightPosY = knightY + 1
+            # TODO: move left if possible
+            elif e.key() == QtCore.Qt.Key_Left and sector.left != "none":
+                self.tasks[self.iter][4].knightPosX = knightX - 1
+            # TODO: move right if possible
+            elif e.key() == QtCore.Qt.Key_Right and sector.right != "none":
+                self.tasks[self.iter][4].knightPosX = knightX + 1
         return        
 
     def proceedEquationKeys(self,e):
