@@ -548,12 +548,11 @@ class Equation(QtGui.QWidget):
     def keyPressEvent(self, e):
         self.proceedEquationKeys(e)
         self.proceedMazeKeys(e)
-                
         self.update()
 
     def proceedMazeKeys(self,e):
         """ Key handling routine for maze puzzles"""
-        if self.tasks[self.iter][3] != "maze":
+        if self.tasks[self.iter][3] != "maze" or self.visualized == False:
             return
         knightX = self.tasks[self.iter][4].knightPosX
         knightY = self.tasks[self.iter][4].knightPosY
@@ -561,19 +560,19 @@ class Equation(QtGui.QWidget):
         sector = self.tasks[self.iter][4].sectors[currentKnightSectorIndex]
         
         if(e.isAutoRepeat() != True):
-            # TODO: Move up if possible
+            # Move in requested direction if possible
             # eg. if there is a sector up available
             if e.key() == QtCore.Qt.Key_Up and sector.up != "none":
                 self.tasks[self.iter][4].knightPosY = knightY - 1
-            # TODO: move down if possible
             elif e.key() == QtCore.Qt.Key_Down and sector.down != "none":
                 self.tasks[self.iter][4].knightPosY = knightY + 1
-            # TODO: move left if possible
             elif e.key() == QtCore.Qt.Key_Left and sector.left != "none":
                 self.tasks[self.iter][4].knightPosX = knightX - 1
-            # TODO: move right if possible
             elif e.key() == QtCore.Qt.Key_Right and sector.right != "none":
                 self.tasks[self.iter][4].knightPosX = knightX + 1
+            # Check for success
+            if(self.validateEquation() == True):
+                self.executeOnSuccess()
         return        
 
     def proceedEquationKeys(self,e):
@@ -599,9 +598,14 @@ class Equation(QtGui.QWidget):
                 self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
                 # Validate and Execute
-                self.validateAndExecute()
+                if(self.validateEquation() == True):
+                    self.executeOnSuccess()
+                else:
+                    self.say("Wrong!")
+                    self.errorOnPresentTask = True
 
-    def validateAndExecute(self):
+
+    def executeOnSuccess(self):
         if(self.validateEquation() == True):
 
             # If error was made in this answer (at some point)
@@ -658,9 +662,6 @@ class Equation(QtGui.QWidget):
             self.errorOnPresentTask = False
             if self.iter == len(self.tasks):
                 self.runCartoons()
-        else:
-            self.say("Wrong!")
-            self.errorOnPresentTask = True
         return
 
     def hideImages(self,widgets):
@@ -684,25 +685,33 @@ class Equation(QtGui.QWidget):
 
     def validateEquation(self):
         # Get result typed and convert it to number
-        if(len(self.tasks[self.iter][0]) == self.lenBaseText[self.iter]):
+        if(len(self.tasks[self.iter][0]) == self.lenBaseText[self.iter]) and self.tasks[self.iter][3] != "maze":
             return False
-        typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
-        computed_result = 0
+        # For maze we do not have a string values
         if self.tasks[self.iter][3] == "+":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1] + self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "-":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1] - self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "*":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1] * self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "/":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1] / self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "?":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
             #print("computed=%d typed=%d\n" %(computed_result,typed_result))
         elif self.tasks[self.iter][3] == "lang":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "maze":
-            computed_result = self.tasks[self.iter][1]
+            # If coords of princess and knight are the same
+            # then puzzle of maze is solved eg. knight met princess
+            computed_result = self.tasks[self.iter][4].princessPosY*self.tasks[self.iter][4].width + self.tasks[self.iter][4].princessPosX
+            typed_result = self.tasks[self.iter][4].knightPosY*self.tasks[self.iter][4].width + self.tasks[self.iter][4].knightPosX
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
