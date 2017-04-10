@@ -23,6 +23,7 @@ import math
 # Dungeon keeper on an other game to start alternatively to netflix
 # TODO: fix unit test so it show a maze
 # TODO: make a unit tests for maze generation , eg. longest route calculation
+# TODO: make rectungalar mazes
 
 class Maze():
 
@@ -474,6 +475,8 @@ class Equation(QtGui.QWidget):
             maze.knight = QtSvg.QSvgWidget(self.resourcesPath + "/knight.svg", self)
             maze.knight.show()
             self.visualized = True
+            # Prepare speech for maze
+            self.say(self.makeMazeSpeech())
         else:
             maze.princess.setGeometry(startX+maze.princessPosX*secLen,
                                       startY+maze.princessPosY*secLen,
@@ -562,7 +565,6 @@ class Equation(QtGui.QWidget):
             equation_string += "\n\nAnswer: " 
         elif matop == "maze":
             # Size of maze
-            # TODO: make rectungalar mazes
             a = matMaxValue
             b = matMaxValue
             # Maze is enerated here
@@ -788,6 +790,10 @@ class Equation(QtGui.QWidget):
     def makeDescriptionOfLangPuzzle(self,stringToPrint):
         """ Function that generates message to be uttered when Lang puzzle is presented"""
         return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
+
+    def makeMazeSpeech(self):
+        """ Function that generates message to be uttered when Maze puzzle is presented"""
+        return "Princess is lost in a maze. Please find her" 
 
 # main function starts here        
 if __name__ == "__main__":
