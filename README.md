@@ -7,6 +7,7 @@ Having a daughter which said "That was a very good day. I watched a lot of carto
 # Features:
 - math puzzels: adding, substracting, multiplication, division, counting
 - language vocabulary puzzles: matching a word describing picture with appropriate picture
+- maze puzzles
 - Starts a netfix via browser and set timeout for watching, then shutdowns the system
 - fully configurable:
   - number of puzzles
