@@ -22,8 +22,7 @@ import math
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
 # TODO: fix unit test so it show a maze
-# TODO: Render of prince and princess
-# TODO: move key handling into separate function
+# TODO: make a unit tests for maze generation , eg. longest route calculation
 
 class Maze():
 
@@ -50,16 +49,24 @@ class Maze():
 
         self.generateMaze(mazeHeight,mazeWidth)
 
-
     def generateMaze(self, mazeHeight, mazeWidth):
         """ Pick a random sector and start generating"""
         random.seed()
         startx = random.randint(0,mazeWidth-1)
         starty = random.randint(0,mazeHeight-1)
         # Pick random location
+        self.routeLength = 0
+        self.longestRoute = 0
+        self.distantSector = 0
         self.traverseSector(starty,startx,"none")
+#        print("Route: %d Longest route: %d finalSector=%d" %(self.routeLength,self.longestRoute,self.distantSector))
         # Revert all negative , and clear other fields
         self.clearSectors()
+        self.princessPosX = startx
+        self.princessPosY = starty
+        self.knightPosX = self.distantSector % mazeWidth
+        self.knightPosY =  self.distantSector / mazeWidth
+
         return 
 
     def calculateSectorIndex(self, posy, posx):
@@ -124,7 +131,15 @@ class Maze():
                 nextPosX = posx
                 nextPosY = posy+1
 
+            # If current route is longer that 
+            # the longest among routes then update
+            # the longest command
+            self.routeLength = self.routeLength + 1
+            if self.routeLength > self.longestRoute:
+                self.longestRoute = self.routeLength
+                self.distantSector = currentSector 
             self.traverseSector(nextPosY,nextPosX,direction)
+            self.routeLength = self.routeLength - 1
 
     # TODO: Sector 0???
     def clearSectors(self):
@@ -154,7 +169,7 @@ class EquationsConfig:
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
                       'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3,
-                      'maximum_bears' : 15 , 'maximum_value' : 10}
+                      'maximum_bears' : 15 , 'maximum_value' : 10, 'maze_size' : 8}
 
         # If there is a file unpickle it
         # then check the data
@@ -242,6 +257,14 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
+            if args.set_maze_size>= 0:
+                self.data['maze_size'] = args.set_maze_size
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
             if args.set_maximum_bears >= 0:
                 self.data['maximum_bears'] = args.set_maximum_bears
                 self.terminate = True;
@@ -293,10 +316,11 @@ class EquationsConfig:
                         daily_counter: %d
                         maximum_daily_counter: %d
                         maximum_value: %d
+                        maze_size: %d
                         maximum_bears: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['num_mazes'],self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maximum_bears']))
+self.data['num_lang_puzzles'], self.data['num_mazes'],self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -307,6 +331,9 @@ self.data['num_lang_puzzles'], self.data['num_mazes'],self.data['day'],self.data
 
     def getMaximumValue(self):
         return self.data['maximum_value']
+
+    def getMazeSize(self):
+        return self.data['maze_size']
 
     def getMaximumBears(self):
         return self.data['maximum_bears']
@@ -332,7 +359,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_mazes, maximum_value, maximum_bears):
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_mazes, maximum_value, maze_size, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -350,9 +377,8 @@ class Equation(QtGui.QWidget):
         self.errorOnPresentTask = False # Flag indicating if was already some mistake in current puzzle
         self.numMistakes = 0;  # Number of mistakes done
         # For maximum operation value of 0, we do not make a equations
+        operations = []
         if maximum_value != 0:
-            operations = ['+','-','*']
-            operations = []
             
             for i in range(0,num_adds):
                 operations.append('+')
@@ -362,19 +388,24 @@ class Equation(QtGui.QWidget):
                 operations.append('*')
             for i in range(0,num_divs):
                 operations.append('/')
-            # Add num_lang_puzzles param
-            for i in range(0,num_lang_puzzles):
-                operations.append('lang')
-            # Add num_mazes param
+
+        # Add num_lang_puzzles param
+        for i in range(0,num_lang_puzzles):
+            operations.append('lang')
+        # Add num_mazes param
+        if maze_size > 0:
             for i in range(0,num_mazes):
                 operations.append('maze')
            
-            while len(operations) > 0 : 
-                operation = random.choice(operations)
-                operations.remove(operation)
+        while len(operations) > 0 : 
+            operation = random.choice(operations)
+            operations.remove(operation)
+            if operation == "maze":
+                self.tasks.append(self.makeRandomEquation(operation,maze_size))
+            else:
                 self.tasks.append(self.makeRandomEquation(operation,maximum_value))
-                self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
-        
+            self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
+
         if maximum_bears != 0:
             self.tasks.append(self.makeRandomEquation("?",maximum_bears))
             self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
@@ -440,20 +471,14 @@ class Equation(QtGui.QWidget):
         if self.visualized == False:
             maze.princess = QtSvg.QSvgWidget(self.resourcesPath + "/princess.svg", self)
             maze.princess.show()
-            maze.princessPosX = 0 #TMP
-            maze.princessPosY = 0 #TMP
             maze.knight = QtSvg.QSvgWidget(self.resourcesPath + "/knight.svg", self)
             maze.knight.show()
-            maze.knightPosX = 4 #TMP
-            maze.knightPosY = 4 #TMP
             self.visualized = True
         else:
-            #TODO: establish princess coords
             maze.princess.setGeometry(startX+maze.princessPosX*secLen,
                                       startY+maze.princessPosY*secLen,
                                       secLen,
                                       secLen)
-            #TODO: establish knight coords
             maze.knight.setGeometry(startX+ maze.knightPosX*secLen,
                                     startY+ maze.knightPosY*secLen,
                                     secLen,
@@ -537,8 +562,9 @@ class Equation(QtGui.QWidget):
             equation_string += "\n\nAnswer: " 
         elif matop == "maze":
             # Size of maze
-            a = 8
-            b = 10
+            # TODO: make rectungalar mazes
+            a = matMaxValue
+            b = matMaxValue
             # Maze is enerated here
             equation_string = "" 
             data = Maze(a,b) 
@@ -770,6 +796,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_daily_counter", help="Set daily_counter value in configuration file", type=int, default=-1)
     parser.add_argument("--set_maximum_daily_counter", help="Set maximum_daily_counter value in configuration file", type=int, default=-1)
     parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
+    parser.add_argument("--set_maze_size", help="Set maze_size in operations to configuration file", type=int, default=-1)
     parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
     parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
     # Number of specific riddles
@@ -796,6 +823,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_lang_puzzles'),
                             config.isEnabled('num_mazes'),
                             config.getMaximumValue(),
+                            config.getMazeSize(),
                             config.getMaximumBears())       # some initialization has to be done
     else:
         print "Daily limit exhausted" 
