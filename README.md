@@ -40,6 +40,8 @@ Math(adding):
 ![couting](data/screenshots/screen5.png)
 language puzzle:
 ![language puzzle](data/screenshots/screen6.png)
+maze puzzle:
+![maze puzzle](data/screenshots/screen9.png)
 setting maximum value for math puzzles from commandline:
 ![customization](data/screenshots/screen8.png)
 
