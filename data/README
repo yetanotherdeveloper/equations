@@ -1,6 +1,9 @@
 Images comes from  UVic Humanities Computing and Media Centre and Half-Baked Software  
 http://hcmc.uvic.ca/clipart/
 
+How to download them?  list images file so it is an argiment of wget . for example:
+wget `tail -n 20 README` 
+
 animals:
 http://hcmc.uvic.ca/clipart/animals
 
@@ -66,3 +69,23 @@ hcmc.uvic.ca/clipart/animals/whale/whale-wt.gif
 hcmc.uvic.ca/clipart/animals/wolf/wolf-vt.gif
 hcmc.uvic.ca/clipart/animals/zebra/zebra-vt.gif
 hcmc.uvic.ca/clipart/animals/zebra/zebra-wt.gif
+
+#Buildings
+http://hcmc.uvic.ca/clipart/buildings/airport/airport-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/art-gallery/art-gallery-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/bank/bank-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/church/church-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/bus-terminal/bus-terminal-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/construction-site/construction-site-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/factory/factory-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/fire-station/fire-station-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/gas-station/gas-station-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/house/house-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/lighthouse/lighthouse-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/museum/museum-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/post-office/post-office-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/restaurant/restaurant-wb.gif
+http://hcmc.uvic.ca/clipart/buildings/school/school-wb.gif
+http://hcmc.uvic.ca/clipart/buildings/shop/shop-vb.gif
+http://hcmc.uvic.ca/clipart/buildings/stadium/stadium-vb.gif
+
