@@ -760,7 +760,7 @@ class Equation(QtGui.QWidget):
         correctOneName = random.choice(imagesNames)
         picture = QtGui.QPixmap(imagesDirPath +"/"+ correctOneName)
         # Here is name of animal that corresspond to picture
-        correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","")
+        correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
@@ -770,10 +770,10 @@ class Equation(QtGui.QWidget):
         badPool.remove(correctAnswer)
         firstBadAnswer = random.choice(badPool)
         badPool.remove(firstBadAnswer)
-        firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-vt.gif","")                
+        firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","")                
         secondBadAnswer = random.choice(badPool)
         badPool.remove(secondBadAnswer)
-        secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","")
+        secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","")
         return firstBadAnswer,secondBadAnswer
 
     def say(self, text):
