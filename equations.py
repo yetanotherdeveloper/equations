@@ -169,8 +169,9 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3,
-                      'maximum_bears' : 15 , 'maximum_value' : 10, 'maze_size' : 8}
+                      'num_clock_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
+                      'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10,
+                      'maze_size' : 8}
 
         # If there is a file unpickle it
         # then check the data
@@ -219,6 +220,15 @@ class EquationsConfig:
            # Language Puzzles
             if args.set_num_lang_puzzles > -1:
                 self.data['num_lang_puzzles'] = args.set_num_lang_puzzles
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+           # Clock Puzzles
+            if args.set_num_clock_puzzles > -1:
+                self.data['num_clock_puzzles'] = args.set_num_clock_puzzles
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -312,6 +322,7 @@ class EquationsConfig:
                         num_muls: %d
                         num_divs: %d
                         num_lang_puzzles: %d
+                        num_clock_puzzles: %d
                         num_mazes: %d
                         day: %d   
                         daily_counter: %d
@@ -321,7 +332,7 @@ class EquationsConfig:
                         maximum_bears: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['num_mazes'],self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
+self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],self.data['num_mazes'],self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -360,7 +371,7 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
-    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_mazes, maximum_value, maze_size, maximum_bears):
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes, maximum_value, maze_size, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -390,6 +401,9 @@ class Equation(QtGui.QWidget):
             for i in range(0,num_divs):
                 operations.append('/')
 
+        # Add num_clock_puzzles param
+        for i in range(0,num_clock_puzzles):
+            operations.append('clock')
         # Add num_lang_puzzles param
         for i in range(0,num_lang_puzzles):
             operations.append('lang')
@@ -450,6 +464,44 @@ class Equation(QtGui.QWidget):
             self.visualized = True
             time.sleep(1)
             self.say(self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0]))
+        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "clock" :
+            # TODO: put this in the middle
+            #self.hideImages(self.tempImages) ?????
+            sizeOfClock = self.geometry().width()/5
+            if self.visualized == False:
+                self.tempImages = []
+
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/clock.svg", self)
+                x = self.geometry().x()
+                y = self.geometry().y()
+                width = self.geometry().width()
+                height = self.geometry().height()
+                posx = self.geometry().width()/2 - sizeOfClock/2
+                posy = 0
+                pic.setGeometry(posx,posy,sizeOfClock,sizeOfClock)
+                self.tempImages.append(pic)
+                self.visualized = True
+                time.sleep(1)
+                self.say(self.makeDescriptionOfClockPuzzle(self.tasks[self.iter][0]))
+                pic.show()
+            # Get degree of rotation of clock pointer
+            correctAnswer = self.tasks[self.iter][1]
+            # Take correct answer eg. 1) 1:00
+            hour=self.tasks[self.iter][0][self.tasks[self.iter][0].find(str(correctAnswer)+')')+3:]
+            # remove answer enumeration and leave only hour
+            hour = int(hour[0:hour.find(':')])
+            degrees = hour * 360/12 
+            # Big pointer
+            midx = self.geometry().width()/2
+            midy = sizeOfClock*0.42
+            qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
+            qp.drawLine(midx,midy,midx,0 + sizeOfClock*0.2 )
+            # small pointer
+            qp.setPen(QtGui.QPen(QtCore.Qt.black, 13, QtCore.Qt.SolidLine))
+            qp.translate(midx,midy)
+            qp.rotate(degrees)
+            qp.drawLine(0,0,0 , 0 - sizeOfClock*0.15)
+
         elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
             self.renderMaze(self.tasks[self.iter][4],event,qp)
             # Render the dynamic elements
@@ -511,7 +563,7 @@ class Equation(QtGui.QWidget):
     def drawText(self, event, qp):
         if self.iter < len(self.tasks) :
             qp.setPen(QtGui.QColor(0,0,255))
-            if self.tasks[self.iter][3] == "lang":
+            if self.tasks[self.iter][3] == "lang" or self.tasks[self.iter][3] == "clock":
                 qp.setFont(QtGui.QFont('Decorative',50))
             else:
                 qp.setFont(QtGui.QFont('Decorative',200))
@@ -551,6 +603,21 @@ class Equation(QtGui.QWidget):
             badAnswers = ["",""]
             picture, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
             self.pixmaps.append(picture)
+            # TODO Remeber which answer is proper one        
+            a = random.randint(1,3)
+            b = self.addPrefix(goodAnswer)
+            equation_string = ""
+            baddies_index = 0
+            for i in range(1,4):
+                if i == a:
+                    equation_string+=str(i) + ") " + goodAnswer +"\n"
+                else:
+                    equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
+                    baddies_index +=1
+            equation_string += "\n\nAnswer: " 
+        elif matop == "clock":
+            badAnswers = ["",""]
+            goodAnswer, badAnswers[0], badAnswers[1] = self.prepareClockTestData()
             # TODO Remeber which answer is proper one        
             a = random.randint(1,3)
             b = self.addPrefix(goodAnswer)
@@ -737,6 +804,9 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "lang":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "clock":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "maze":
             # If coords of princess and knight are the same
             # then puzzle of maze is solved eg. knight met princess
@@ -763,6 +833,18 @@ class Equation(QtGui.QWidget):
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
+
+    def prepareClockTestData(self):
+        """ Load a clock face image , generate good answer and bad ones """
+        houres = ["1:00" ,"2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00",
+                 "10:00", "11:00", "12:00"]
+        correctHour = random.choice(houres)
+        houres.remove(correctHour)
+        incorrectHour1 = random.choice(houres) 
+        houres.remove(incorrectHour1)
+        incorrectHour2 = random.choice(houres) 
+
+        return correctHour, incorrectHour1, incorrectHour2
 
     def getIncorrectAnswers(self, imagesNames, correctAnswer):
         """ Get Name of animal different from given correctAnswer"""
@@ -791,6 +873,10 @@ class Equation(QtGui.QWidget):
         """ Function that generates message to be uttered when Lang puzzle is presented"""
         return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
 
+    def makeDescriptionOfClockPuzzle(self,stringToPrint):
+        """ Function that generates message to be uttered when Clock puzzle is presented"""
+        return "What time is it? Possible answers: " + stringToPrint.replace("Answer:","") 
+
     def makeMazeSpeech(self):
         """ Function that generates message to be uttered when Maze puzzle is presented"""
         return "Princess is lost in a maze. Please find her" 
@@ -812,6 +898,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
     parser.add_argument("--set_num_lang_puzzles", help="Number of Language riddles", type=int, default=-1)
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
+    parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
 
     args = parser.parse_args()
     config = EquationsConfig(args)
@@ -827,6 +914,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_muls'),
                             config.isEnabled('num_divs'),
                             config.isEnabled('num_lang_puzzles'),
+                            config.isEnabled('num_clock_puzzles'),
                             config.isEnabled('num_mazes'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
