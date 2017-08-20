@@ -24,6 +24,7 @@ import math
 # TODO: fix unit test so it show a maze
 # TODO: make a unit tests for maze generation , eg. longest route calculation
 # TODO: make rectungalar mazes
+# TODO: unit tests for clock puzzle
 
 class Maze():
 
@@ -487,9 +488,9 @@ class Equation(QtGui.QWidget):
             # Get degree of rotation of clock pointer
             correctAnswer = self.tasks[self.iter][1]
             # Take correct answer eg. 1) 1:00
-            hour=self.tasks[self.iter][0][self.tasks[self.iter][0].find(str(correctAnswer)+')')+3:]
+            hour=self.tasks[self.iter][0][self.tasks[self.iter][0].find(str(correctAnswer)+')')+8:]
             # remove answer enumeration and leave only hour
-            hour = int(hour[0:hour.find(':')])
+            hour = int(hour[0:hour.find("o'clock")])
             degrees = hour * 360/12 
             # Big pointer
             midx = self.geometry().width()/2
@@ -618,7 +619,6 @@ class Equation(QtGui.QWidget):
         elif matop == "clock":
             badAnswers = ["",""]
             goodAnswer, badAnswers[0], badAnswers[1] = self.prepareClockTestData()
-            # TODO Remeber which answer is proper one        
             a = random.randint(1,3)
             b = self.addPrefix(goodAnswer)
             equation_string = ""
@@ -836,8 +836,9 @@ class Equation(QtGui.QWidget):
 
     def prepareClockTestData(self):
         """ Load a clock face image , generate good answer and bad ones """
-        houres = ["1:00" ,"2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00",
-                 "10:00", "11:00", "12:00"]
+        houres = ["It is 1 o'clock." ,"It is 2 o'clock.", "It is 3 o'clock.", "It is 4 o'clock.", 
+                  "It is 5 o'clock.", "It is 6 o'clock.", "It is 7 o'clock.", "It is 8 o'clock.",
+                     "It is 9 o'clock.", "It is 10 o'clock.", "It is 11 o'clock.", "It is 12 o'clock."]
         correctHour = random.choice(houres)
         houres.remove(correctHour)
         incorrectHour1 = random.choice(houres) 
