@@ -35,11 +35,13 @@ Running unit tests with dropping into debugger on failures:
 
 # Screenshots
 Counting puzzle:
-![couting](data/screenshots/screen7.png)
+![counting](data/screenshots/screen7.png)
 Math(adding):
-![couting](data/screenshots/screen5.png)
+![adding](data/screenshots/screen5.png)
 language puzzle:
 ![language puzzle](data/screenshots/screen6.png)
+clock puzzle:
+![clock puzzle](data/screenshots/screen10.png)
 maze puzzle:
 ![maze puzzle](data/screenshots/screen9.png)
 setting maximum value for math puzzles from commandline:
