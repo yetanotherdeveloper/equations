@@ -487,11 +487,8 @@ class Equation(QtGui.QWidget):
                 pic.show()
             # Get degree of rotation of clock pointer
             correctAnswer = self.tasks[self.iter][1]
-            # Take correct answer eg. 1) 1:00
-            hour=self.tasks[self.iter][0][self.tasks[self.iter][0].find(str(correctAnswer)+')')+8:]
             # remove answer enumeration and leave only hour
-            hour = int(hour[0:hour.find("o'clock")])
-            degrees = hour * 360/12 
+            degrees = correctAnswer * 360/12 
             # Big pointer
             midx = self.geometry().width()/2
             midy = sizeOfClock*0.42
@@ -617,19 +614,10 @@ class Equation(QtGui.QWidget):
                     baddies_index +=1
             equation_string += "\n\nAnswer: " 
         elif matop == "clock":
-            badAnswers = ["",""]
-            goodAnswer, badAnswers[0], badAnswers[1] = self.prepareClockTestData()
-            a = random.randint(1,3)
-            b = self.addPrefix(goodAnswer)
-            equation_string = ""
+            a = self.prepareClockTestData()
+            b = 0
             baddies_index = 0
-            for i in range(1,4):
-                if i == a:
-                    equation_string+=str(i) + ") " + goodAnswer +"\n"
-                else:
-                    equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
-                    baddies_index +=1
-            equation_string += "\n\nAnswer: " 
+            equation_string = "\n\nAnswer: " 
         elif matop == "maze":
             # Size of maze
             a = matMaxValue
@@ -836,16 +824,9 @@ class Equation(QtGui.QWidget):
 
     def prepareClockTestData(self):
         """ Load a clock face image , generate good answer and bad ones """
-        houres = ["It is 1 o'clock." ,"It is 2 o'clock.", "It is 3 o'clock.", "It is 4 o'clock.", 
-                  "It is 5 o'clock.", "It is 6 o'clock.", "It is 7 o'clock.", "It is 8 o'clock.",
-                     "It is 9 o'clock.", "It is 10 o'clock.", "It is 11 o'clock.", "It is 12 o'clock."]
+        houres = [1 , 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         correctHour = random.choice(houres)
-        houres.remove(correctHour)
-        incorrectHour1 = random.choice(houres) 
-        houres.remove(incorrectHour1)
-        incorrectHour2 = random.choice(houres) 
-
-        return correctHour, incorrectHour1, incorrectHour2
+        return correctHour 
 
     def getIncorrectAnswers(self, imagesNames, correctAnswer):
         """ Get Name of animal different from given correctAnswer"""
@@ -876,7 +857,7 @@ class Equation(QtGui.QWidget):
 
     def makeDescriptionOfClockPuzzle(self,stringToPrint):
         """ Function that generates message to be uttered when Clock puzzle is presented"""
-        return "What time is it? Possible answers: " + stringToPrint.replace("Answer:","") 
+        return "What time is it?" 
 
     def makeMazeSpeech(self):
         """ Function that generates message to be uttered when Maze puzzle is presented"""
