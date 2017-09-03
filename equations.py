@@ -741,6 +741,11 @@ class Equation(QtGui.QWidget):
                 time.sleep(1)
                 self.visualized = False
                 self.pixmaps.remove(self.pixmaps[0])
+            if self.tasks[self.iter][3] == "clock":
+                time.sleep(1)
+                self.say("It is " + str(self.tasks[self.iter][1]) + " o'clock")
+                time.sleep(1)
+                self.visualized = False
             self.iter+=1
             self.visualized=False
             self.hideImages(self.tempImages)
