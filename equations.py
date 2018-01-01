@@ -452,6 +452,28 @@ class Equation(QtGui.QWidget):
             self.description = self.makeDescriptionOfBearsPuzzle() 
             self.say(self.description)
             self.visualized = True
+        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "text" and self.visualized == False:
+            #TODO: Work in progress
+            for pos in range(0,self.tasks[self.iter][1]):
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
+                x = self.geometry().x()
+                y = self.geometry().y()
+                width = self.geometry().width()
+                height = self.geometry().height()
+                sizeOfItem = width/10
+                if (pos+1)*sizeOfItem >= width:
+                    posx = x+(pos+1)*sizeOfItem - width
+                    posy = y+sizeOfItem
+                else:
+                    posx = x+pos*sizeOfItem
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+                pic.show()
+                self.tempImages.append(pic)
+            self.visualized = True
+            time.sleep(1)
+            self.say(self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][0]))
+
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
             self.pixmaps[0] = self.pixmaps[0].scaledToWidth(self.sizeOfAnimal)
@@ -617,6 +639,11 @@ class Equation(QtGui.QWidget):
                     equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
                     baddies_index +=1
             equation_string += "\n\nAnswer: " 
+        elif matop == "text":
+            # TODO: put descrption, pictures and correct result into proper variables
+            self.prepareTextPuzzle(matMaxValue)  
+            equation_string += "\n\nAnswer: " 
+
         elif matop == "clock":
             a = self.prepareClockTestData()
             b = 0
@@ -771,7 +798,7 @@ class Equation(QtGui.QWidget):
             # Calculate time allowed for watching cartoons
             timeToWatch = 20 
             if self.iter > self.numMistakes:
-                timeToWatch +=  (self.iter  - self.numMistakes) * 2
+                timeToWatch +=  (self.iter  - self.numMistakes) 
             subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
             subprocess.Popen(["google-chrome",
                              "--start-maximized",
@@ -833,6 +860,13 @@ class Equation(QtGui.QWidget):
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
+
+    def prepareTextPuzzle(self, maxValue):
+        """Generate phrase of puzzle, pictures and good result"""
+       
+        relations = ["more by one than", "less by one than", "twice as much as", "half of what"] 
+
+
 
     def prepareClockTestData(self):
         """ Load a clock face image , generate good answer and bad ones """
