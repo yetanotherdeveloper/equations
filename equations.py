@@ -789,17 +789,16 @@ class Equation(QtGui.QWidget):
                 time.sleep(1)
                 self.say("This is " + self.tasks[self.iter][2])
                 time.sleep(1)
-                self.visualized = False
                 self.pixmaps.remove(self.pixmaps[0])
             if self.tasks[self.iter][3] == "clock":
                 time.sleep(1)
                 self.say("It is " + str(self.tasks[self.iter][1]) + " o'clock")
                 time.sleep(1)
-                self.visualized = False
             self.iter+=1
             self.visualized=False
             self.description = ""  # Reset description of puzzle
             self.hideImages(self.tempImages)
+            self.visualized = False
             self.errorOnPresentTask = False
             if self.iter == len(self.tasks):
                 self.runCartoons()
@@ -846,6 +845,9 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1]
             #print("computed=%d typed=%d\n" %(computed_result,typed_result))
         elif self.tasks[self.iter][3] == "lang":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "text":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "clock":
