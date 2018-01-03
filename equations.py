@@ -449,9 +449,9 @@ class Equation(QtGui.QWidget):
                 pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
                 pic.show()
                 self.tempImages.append(pic)
-                self.description = self.makeDescriptionOfBearsPuzzle() 
-                self.say(self.description)
-                self.visualized = True
+            self.description = self.makeDescriptionOfBearsPuzzle() 
+            self.say(self.description)
+            self.visualized = True
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
             self.pixmaps[0] = self.pixmaps[0].scaledToWidth(self.sizeOfAnimal)
