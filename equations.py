@@ -473,7 +473,7 @@ class Equation(QtGui.QWidget):
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "text" and self.visualized == False:
             for pos in range(0,self.tasks[self.iter][2]):
                 # TODO: Make an ice cream picture to be shown
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self)
                 x = self.geometry().x()
                 y = self.geometry().y()
                 width = self.geometry().width()
