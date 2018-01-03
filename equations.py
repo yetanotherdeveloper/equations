@@ -455,6 +455,7 @@ class Equation(QtGui.QWidget):
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "text" and self.visualized == False:
             #TODO: Work in progress
             for pos in range(0,self.tasks[self.iter][1]):
+                # TODO: Make an ice cream picture to be shown
                 pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
                 x = self.geometry().x()
                 y = self.geometry().y()
@@ -472,7 +473,8 @@ class Equation(QtGui.QWidget):
                 self.tempImages.append(pic)
             self.visualized = True
             time.sleep(1)
-            self.say(self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][0]))
+            self.description = self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][0])
+            self.say(self.description)
 
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
@@ -641,8 +643,8 @@ class Equation(QtGui.QWidget):
             equation_string += "\n\nAnswer: " 
         elif matop == "text":
             # TODO: put descrption, pictures and correct result into proper variables
-            self.prepareTextPuzzle(matMaxValue)  
-            equation_string += "\n\nAnswer: " 
+            relation_text, answer_items, sum_items = self.prepareTextPuzzle(matMaxValue)  
+            equation_string = "\nAmount of Kasia ice creams =  " 
 
         elif matop == "clock":
             a = self.prepareClockTestData()
@@ -856,15 +858,22 @@ class Equation(QtGui.QWidget):
         # Get Randomly imagename to be proper answer and its picture
         correctOneName = random.choice(imagesNames)
         picture = QtGui.QPixmap(imagesDirPath +"/"+ correctOneName)
-        # Here is name of animal that corresspond to picture
+        # Here is name of animal that corresponds to picture
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
     def prepareTextPuzzle(self, maxValue):
-        """Generate phrase of puzzle, pictures and good result"""
-       
-        relations = ["more by one than", "less by one than", "twice as much as", "half of what"] 
+        """Generate Text puzzle and return in a form of: relation(text), correct answer, total number of items"""
+        # Stephany has... 
+        relations = {"one more than" : (1,1), "one less than" : (1,-1), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
+
+        relation = random.choice(relations.keys())
+        coeff = relations[relation]
+        # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
+        kasia_items =  random.randint(1, int((maxValue - coeff[1])/(1 + coeff[0])))
+        sum_items = kasia_items + kasia_items*coeff[0] + coeff[1] 
+        return relation, kasia_items, sum_items 
 
 
 
@@ -900,6 +909,10 @@ class Equation(QtGui.QWidget):
 
     def makeDescriptionOfBearsPuzzle(self):
         return "How many bears You can see?"
+
+    def makeDescriptionOfTextPuzzle(self,stringToPrint):
+        # TODO: Proper Description generation
+        return "Katie and Stephanie have six ice creams all together?"
 
     def makeDescriptionOfLangPuzzle(self,stringToPrint):
         """ Function that generates message to be uttered when Lang puzzle is presented"""
