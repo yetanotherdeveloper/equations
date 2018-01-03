@@ -9,14 +9,28 @@ import os
 import pickle
 import time
 
+def testmakeDescriptionOfTextPuzzle(qtbot):
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    qtbot.addWidget(eqobj)
+    description = eqobj.makeDescriptionOfTextPuzzle(10, "half of what")
+    assert(description == "Katie and Stephanie have 10 ice creams all together. Stephanie has half of what Katie has. How many ice creams does Katie have?" )
+
+def testPrepareTextPuzzle(qtbot):
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    qtbot.addWidget(eqobj)
+    random.seed(1)
+    # It should be "half of what" , 6 , 9
+    relation_text, answer_items, sum_items  = eqobj.prepareTextPuzzle(10)
+    assert(relation_text == "half of what" and answer_items == 6 and sum_items == 9 )
+
 def testGetIncorrectAnswers(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog-wt.gif")
     assert( (firstBadAnswer == "bear" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "bear"))
 
 def testPrepareTestData(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
     imagesPath = os.path.realpath(__file__).replace("test_equations.py","") + "/data/images/"
     qtbot.addWidget(eqobj)
     correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2 = eqobj.prepareTestData(imagesPath)
