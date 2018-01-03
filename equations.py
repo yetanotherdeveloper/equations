@@ -379,7 +379,7 @@ class Equation(QtGui.QWidget):
         self.args = args
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.images = self.resourcesPath + "/data/images/"
-        self.voices = { 'failure' : QtGui.QSound(self.resourcesPath + "/Dontfail_vbr.mp3")}
+        self.description = ""
         self.tasks = []
         self.tempImages = []
         self.tempMedals = []
@@ -449,6 +449,8 @@ class Equation(QtGui.QWidget):
                 pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
                 pic.show()
                 self.tempImages.append(pic)
+                self.description = self.makeDescriptionOfBearsPuzzle() 
+                self.say(self.description)
                 self.visualized = True
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
@@ -464,7 +466,8 @@ class Equation(QtGui.QWidget):
             self.tempImages.append(pic)
             self.visualized = True
             time.sleep(1)
-            self.say(self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0]))
+            self.description = self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0])
+            self.say(self.description)
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "clock" :
             # TODO: put this in the middle
             #self.hideImages(self.tempImages) ?????
@@ -483,7 +486,8 @@ class Equation(QtGui.QWidget):
                 self.tempImages.append(pic)
                 self.visualized = True
                 time.sleep(1)
-                self.say(self.makeDescriptionOfClockPuzzle(self.tasks[self.iter][0]))
+                self.description = self.makeDescriptionOfClockPuzzle(self.tasks[self.iter][0])
+                self.say(self.description)
                 pic.show()
             # Get degree of rotation of clock pointer
             correctAnswer = self.tasks[self.iter][1]
@@ -678,7 +682,9 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_9 : "9",
                     }
         if(e.isAutoRepeat() != True):
-            if((e.key() == QtCore.Qt.Key_Backspace) and (len(self.tasks[self.iter][0]) > self.lenBaseText[self.iter])):
+            if e.key() == QtCore.Qt.Key_R:
+                self.say(self.description)
+            elif((e.key() == QtCore.Qt.Key_Backspace) and (len(self.tasks[self.iter][0]) > self.lenBaseText[self.iter])):
                self.tasks[self.iter] = (self.tasks[self.iter][0][:-1], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() in key2str) and (len(self.tasks[self.iter][0]) < self.lenBaseText[self.iter] + 3)): # No more than three characters
                 self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
@@ -748,6 +754,7 @@ class Equation(QtGui.QWidget):
                 self.visualized = False
             self.iter+=1
             self.visualized=False
+            self.description = ""  # Reset description of puzzle
             self.hideImages(self.tempImages)
             self.errorOnPresentTask = False
             if self.iter == len(self.tasks):
@@ -856,6 +863,10 @@ class Equation(QtGui.QWidget):
            return "an " + text 
         else:
             return "a " + text
+
+    def makeDescriptionOfBearsPuzzle(self):
+        return "How many bears You can see?"
+
     def makeDescriptionOfLangPuzzle(self,stringToPrint):
         """ Function that generates message to be uttered when Lang puzzle is presented"""
         return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
