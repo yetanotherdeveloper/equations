@@ -660,7 +660,7 @@ class Equation(QtGui.QWidget):
             equation_string += "\n\nAnswer: " 
         elif matop == "text":
             data, a, b = self.prepareTextPuzzle(matMaxValue)  
-            equation_string = "\nAmount of Kasia ice creams =  " 
+            equation_string = "\nAmount of Katie ice creams =  " 
         elif matop == "clock":
             a = self.prepareClockTestData()
             b = 0
