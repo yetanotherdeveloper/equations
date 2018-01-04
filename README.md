@@ -5,7 +5,7 @@ Simple program that aims to generate some mathematical & language puzzles for ch
 Having a daughter which said "That was a very good day. I watched a lot of cartoons." , aim of this  project is to use children motivation to watch cartoons for educational purposes.
 
 # Features:
-- math puzzels: adding, substracting, multiplication, division, counting
+- math puzzels: adding, substracting, multiplication, division, counting, text puzzles
 - language vocabulary puzzles: matching a word describing picture with appropriate picture
 - maze puzzles
 - Starts a netfix via browser and set timeout for watching, then shutdowns the system
@@ -13,7 +13,7 @@ Having a daughter which said "That was a very good day. I watched a lot of carto
   - number of puzzles
   - range of values for math puzzles 
   - number of sessions of watching per day
-- With each solved puzzle without mistake, time for watching cartoons is increased by 2 minutes
+- With each solved puzzle without mistake, time for watching cartoons is increased by one minutes
 
 # Installation
 - Ideally this program should run in mouse-less window manager and add to startup scripts.
@@ -38,6 +38,8 @@ Counting puzzle:
 ![counting](data/screenshots/screen7.png)
 Math(adding):
 ![adding](data/screenshots/screen5.png)
+Math(text puzzle):
+![adding](data/screenshots/screen11.png)
 language puzzle:
 ![language puzzle](data/screenshots/screen6.png)
 clock puzzle:
