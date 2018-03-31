@@ -882,8 +882,9 @@ class Equation(QtGui.QWidget):
 
     def prepareTextPuzzle(self, maxValue):
         """Generate Text puzzle and return in a form of: relation(text), correct answer, total number of items"""
+        # TODO: Add unit test , mandatory
         # Stephany has... 
-        relations = {"one more than" : (1,1), "one less than" : (1,-1), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
+        relations = {"three more than": (1,3) ,"two more than": (1,2) ,"one more than" : (1,1), "one less than" : (1,-1), "two less than" : (1,-2), "three less than" : (1,-3), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
 
         relation = random.choice(relations.keys())
         coeff = relations[relation]
