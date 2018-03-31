@@ -880,16 +880,24 @@ class Equation(QtGui.QWidget):
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
+    def computeAnswerAndTotal(self, param_pair, maxValue):
+        # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
+        kasia_items =  random.randint(2, int((maxValue - param_pair[1])/(1 + param_pair[0])))
+        stephane_items = kasia_items*param_pair[0] + param_pair[1]
+        if stephane_items != int(stephane_items):
+            stephane_items = int(stephane_items)
+            kasia_items = (stephane_items - param_pair[1])/param_pair[0]
+        sum_items = int(kasia_items + kasia_items*param_pair[0] + param_pair[1])
+        return kasia_items, sum_items
+
     def prepareTextPuzzle(self, maxValue):
         """Generate Text puzzle and return in a form of: relation(text), correct answer, total number of items"""
+            
+        # TODO: Add unit test , mandatory
         # Stephany has... 
-        relations = {"one more than" : (1,1), "one less than" : (1,-1), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
-
+        relations = {"three more than": (1,3) ,"two more than": (1,2) ,"one more than" : (1,1), "one less than" : (1,-1), "two less than" : (1,-2), "three less than" : (1,-3), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
         relation = random.choice(relations.keys())
-        coeff = relations[relation]
-        # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
-        kasia_items =  random.randint(2, int((maxValue - coeff[1])/(1 + coeff[0])))
-        sum_items = int(kasia_items + kasia_items*coeff[0] + coeff[1]) 
+        kasia_items, sum_items = self.computeAnswerAndTotal(relations[relation],maxValue)
         return relation, kasia_items, sum_items 
 
     def prepareClockTestData(self):

@@ -9,6 +9,35 @@ import os
 import pickle
 import time
 
+def testcomputeAnswerAndTotal(qtbot):
+    def checkConsistency(eqobj, maximum_items, param_pair):
+        kasia_items, sum_items = eqobj.computeAnswerAndTotal(param_pair,maximum_items)
+        assert(kasia_items == int(kasia_items))
+        assert(sum_items == int(sum_items))
+        stephany_items = kasia_items*param_pair[0] + param_pair[1]                      
+        assert(stephany_items == int(stephany_items))
+ 
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    qtbot.addWidget(eqobj)
+    
+    checkConsistency(eqobj, 10, (1,3)) 
+    checkConsistency(eqobj, 10, (1,2)) 
+    checkConsistency(eqobj, 10, (1,1)) 
+    checkConsistency(eqobj, 10, (1,-1)) 
+    checkConsistency(eqobj, 10, (1,-2)) 
+    checkConsistency(eqobj, 10, (1,-3)) 
+    checkConsistency(eqobj, 10, (2,0)) 
+    checkConsistency(eqobj, 10, (0.5,0)) 
+
+    checkConsistency(eqobj, 7, (1,3)) 
+    checkConsistency(eqobj, 7, (1,2)) 
+    checkConsistency(eqobj, 7, (1,1)) 
+    checkConsistency(eqobj, 7, (1,-1)) 
+    checkConsistency(eqobj, 7, (1,-2)) 
+    checkConsistency(eqobj, 7, (1,-3)) 
+    checkConsistency(eqobj, 7, (2,0)) 
+    checkConsistency(eqobj, 7, (0.5,0)) 
+
 def testmakeDescriptionOfTextPuzzle(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
@@ -21,7 +50,7 @@ def testPrepareTextPuzzle(qtbot):
     random.seed(1)
     # It should be "half of what" , 6 , 9
     relation_text, answer_items, sum_items  = eqobj.prepareTextPuzzle(10)
-    assert(relation_text == "half of what" and answer_items == 6 and sum_items == 9 )
+    assert(relation_text == "two more than" and answer_items == 4 and sum_items == 10 )
 
 def testGetIncorrectAnswers(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
