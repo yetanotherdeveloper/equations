@@ -55,8 +55,10 @@ def testPrepareTextPuzzle(qtbot):
 def testGetIncorrectAnswers(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
-    firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog-wt.gif")
+    firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog")
     assert( (firstBadAnswer == "bear" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "bear"))
+    firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","bear-vt.gif","lion-wt.gif","cow-wt.gif"],"bear")
+    assert( (firstBadAnswer == "cow" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "cow"))
 
 def testPrepareTestData(qtbot):
     eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)

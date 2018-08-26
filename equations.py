@@ -877,7 +877,7 @@ class Equation(QtGui.QWidget):
         picture = QtGui.QPixmap(imagesDirPath +"/"+ correctOneName)
         # Here is name of animal that corresponds to picture
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
-        incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctOneName)
+        incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctAnimalName)
         return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
     def computeAnswerAndTotal(self, param_pair, maxValue):
@@ -909,7 +909,11 @@ class Equation(QtGui.QWidget):
     def getIncorrectAnswers(self, imagesNames, correctAnswer):
         """ Get Name of animal different from given correctAnswer"""
         badPool = imagesNames
-        badPool.remove(correctAnswer)
+        # Remove all variants of correct answer
+        extensions = ["-wt.gif","-vt.gif","-vb.gif","-wb.gif",".gif"]
+        for ex in extensions:
+            if correctAnswer+ex in badPool:
+                badPool.remove(correctAnswer+ex)
         firstBadAnswer = random.choice(badPool)
         badPool.remove(firstBadAnswer)
         firstBadAnswer = firstBadAnswer.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")                
