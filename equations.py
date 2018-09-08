@@ -385,6 +385,76 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
+    class Choice:
+        def __init__(self,choices,resourcesPath,parent, startx, starty, width, height, dry_run, timeToWatch):
+            self.candidates = {}
+            # Let's make a list of URL(key) and images to represent URLs
+            i = 0 
+            self.dry_run = dry_run
+            self.startx = startx
+            self.starty = starty
+            self.timeToWatch = timeToWatch
+            self.width = width
+            self.height = height
+            self.stepx = int(1.5*width)
+            self.stepy = int(1.5*height)
+            self.chosen = False
+            self.parent = parent
+            self.x = startx
+            self.y = starty
+            for url in choices:
+                pic = QtSvg.QSvgWidget(resourcesPath + choices[url], self.parent)
+                pic.setGeometry(self.startx + i*self.stepx,self.starty,self.width,self.height)
+                self.candidates[url] = pic
+                i += 1
+
+        def render(self,qp):
+            if self.chosen == True:
+                return
+            # Draw all choices
+            for url in self.candidates:
+                self.candidates[url].show()
+            # Draw rectangule of choice
+            self.drawRectangle(self.x - (self.stepx - self.width)/2, self.y - (self.stepy - self.height)/2, self.stepx, self.stepy,qp)
+
+        def drawRectangle(self,x,y,width,height,qp):
+            qp.setPen(QtGui.QPen(QtCore.Qt.blue, 10, QtCore.Qt.SolidLine))
+            qp.drawLine(x,y,x + width, y)
+            qp.drawLine(x, y, x, y + height )
+            qp.drawLine(x,y + height, x + width, y + height)
+            qp.drawLine(x + width, y, x + width, y + height)
+
+        def processKeys(self,e):
+            if self.chosen == True:
+                return
+            if e.key() == QtCore.Qt.Key_Left and self.x > self.startx:
+                self.x -= self.stepx 
+            elif e.key() == QtCore.Qt.Key_Right and self.x <  self.startx + self.stepx*(len(self.candidates) - 1):
+                self.x += self.stepx 
+            elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
+                # Get chosen URL
+                i = int((self.x - self.startx)/self.stepx)
+                for key in self.candidates:
+                    self.parent.hideImages([self.candidates[key]])
+                self.chosen = True
+                self.runCartoons(list(self.candidates.keys())[i])
+                del self.candidates
+
+
+        def runCartoons(self,url):
+            # Draw pictures of netflix and youtube
+            if self.dry_run == False:
+                # Calculate time allowed for watching cartoons
+                subprocess.call(["sudo","shutdown","-h","+"+str(self.timeToWatch)])
+                subprocess.Popen(["google-chrome",
+                                 "--start-maximized",
+                                 "--app="+url])
+            else:
+                exit()
+            return
+
+                
+
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
                             num_text_puzzles, maximum_value, maze_size, maximum_bears):
         super(Equation, self).__init__()
@@ -548,6 +618,10 @@ class Equation(QtGui.QWidget):
         elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
             self.renderMaze(self.tasks[self.iter][4],event,qp)
             # Render the dynamic elements
+        elif self.iter == len(self.tasks):
+            self.choice.render(qp)
+            self.visualized = True
+            #
         qp.end()
         self.update()
 
@@ -677,12 +751,23 @@ class Equation(QtGui.QWidget):
         return (equation_string, a, b, matop,data)
 
     def keyPressEvent(self, e):
+        self.proceedChoiceKeys(e)
         self.proceedEquationKeys(e)
         self.proceedMazeKeys(e)
         self.update()
 
+
+    def proceedChoiceKeys(self,e):
+        if self.iter != len(self.tasks):
+            return
+        if(e.isAutoRepeat() != True):
+            self.choice.processKeys(e)
+        return
+
     def proceedMazeKeys(self,e):
         """ Key handling routine for maze puzzles"""
+        if self.iter == len(self.tasks):
+            return
         if self.tasks[self.iter][3] != "maze" or self.visualized == False:
             return
         knightX = self.tasks[self.iter][4].knightPosX
@@ -711,6 +796,8 @@ class Equation(QtGui.QWidget):
 
     def proceedEquationKeys(self,e):
         """ Key handling routine for equation and lang puzzles"""
+        if self.iter == len(self.tasks):
+            return
         if self.tasks[self.iter][3] == "maze":
             return
         key2str = {
@@ -801,27 +888,33 @@ class Equation(QtGui.QWidget):
             self.visualized = False
             self.errorOnPresentTask = False
             if self.iter == len(self.tasks):
-                self.runCartoons()
+                self.prepareChoice()
         return
 
     def hideImages(self,widgets):
         for widget in widgets:
             widget.setHidden(True)
 
-    def runCartoons(self):
+
+    def prepareChoice(self):
         self.hideImages(self.tempMedals)
-        if self.args.dry_run == False:
-            # Calculate time allowed for watching cartoons
-            timeToWatch = 20 
-            if self.iter > self.numMistakes:
-                timeToWatch +=  (self.iter  - self.numMistakes) 
-            subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
-            subprocess.Popen(["google-chrome",
-                             "--start-maximized",
-                             "--app=http://www.netflix.com"])
-        else:
-            exit()
-        return
+        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg"}
+        # Calculate time to play cartoons for
+        timeToWatch = 20 
+        if self.iter > self.numMistakes:
+            timeToWatch +=  (self.iter  - self.numMistakes) 
+        width = self.geometry().width()/len(choices)/2
+        height = self.geometry().height()/len(choices)/2
+        self.choice = self.Choice(choices,
+                                  self.resourcesPath,
+                                  self,
+                                  self.geometry().width()/5,
+                                  self.geometry().height()/5,
+                                  width,
+                                  height,
+                                  self.args.dry_run,
+                                  timeToWatch)
+
 
     def validateEquation(self):
         # Get result typed and convert it to number
