@@ -17,7 +17,7 @@ def testcomputeAnswerAndTotal(qtbot):
         stephany_items = kasia_items*param_pair[0] + param_pair[1]                      
         assert(stephany_items == int(stephany_items))
  
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     
     checkConsistency(eqobj, 10, (1,3)) 
@@ -39,21 +39,37 @@ def testcomputeAnswerAndTotal(qtbot):
     checkConsistency(eqobj, 7, (0.5,0)) 
 
 def testmakeDescriptionOfTextPuzzle(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     description = eqobj.makeDescriptionOfTextPuzzle(10, "half of what")
     assert(description == "Katie and Stephanie have 10 ice creams all together. Stephanie has half of what Katie has. How many ice creams does Katie have?" )
 
 def testPrepareTextPuzzle(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     random.seed(1)
     # It should be "half of what" , 6 , 9
     relation_text, answer_items, sum_items  = eqobj.prepareTextPuzzle(10)
     assert(relation_text == "two more than" and answer_items == 4 and sum_items == 10 )
 
+def testPrepareBuyingPuzzle(qtbot):
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
+    qtbot.addWidget(eqobj)
+    random.seed(1)
+    # It should be "ice_cream.svg" , 3 , 9
+    item_to_buy, answer, coins = eqobj.prepareBuyingPuzzle()
+    assert(item_to_buy == "ice_cream.svg" and answer == 3 and 
+            coins[(0,10)] == 4 and
+            coins[(0,20)] == 2 and
+            coins[(0,50)] == 2 and
+            coins[(1,0)] == 0 and
+            coins[(2,0)] == 0 and
+            coins[(5,0)] == 0 )
+
+
+
 def testGetIncorrectAnswers(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
     qtbot.addWidget(eqobj)
     firstBadAnswer, secondBadAnswer = eqobj.getIncorrectAnswers(["bear-wt.gif","dog-wt.gif","lion-wt.gif"],"dog")
     assert( (firstBadAnswer == "bear" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "bear"))
@@ -61,7 +77,7 @@ def testGetIncorrectAnswers(qtbot):
     assert( (firstBadAnswer == "cow" and secondBadAnswer == "lion") or (firstBadAnswer == "lion" and secondBadAnswer == "cow"))
 
 def testPrepareTestData(qtbot):
-    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0)
+    eqobj = equations.Equation("none",0,0,0,0,0,0,0,0,0,0,0,0)
     imagesPath = os.path.realpath(__file__).replace("test_equations.py","") + "/data/images/"
     qtbot.addWidget(eqobj)
     correctPicture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2 = eqobj.prepareTestData(imagesPath)

@@ -170,7 +170,7 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
+                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
                       'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10,
                       'maze_size' : 8}
         # If there is a file unpickle it
@@ -229,6 +229,15 @@ class EquationsConfig:
            # Text Puzzles
             if args.set_num_text_puzzles > -1:
                 self.data['num_text_puzzles'] = args.set_num_text_puzzles
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
+           # Buying Puzzles
+            if args.set_num_buying_puzzles > -1:
+                self.data['num_buying_puzzles'] = args.set_num_buying_puzzles
                 self.terminate = True;
                 self.print_config();
                 configFile = open(configDir+"config","w")
@@ -334,6 +343,7 @@ class EquationsConfig:
                         num_clock_puzzles: %d
                         num_mazes: %d
                         num_text_puzzles: %d
+                        num_buying_puzzles: %d
                         day: %d   
                         daily_counter: %d
                         maximum_daily_counter: %d
@@ -342,7 +352,7 @@ class EquationsConfig:
                         maximum_bears: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_mazes'],  self.data['num_text_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
+self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_mazes'],  self.data['num_text_puzzles'], self.data['num_buying_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
         
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
@@ -456,7 +466,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, maximum_value, maze_size, maximum_bears):
+                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -495,6 +505,9 @@ class Equation(QtGui.QWidget):
         # Add num_text_puzzles param
         for i in range(0,num_text_puzzles):
             operations.append('text')
+        # Add num_buying_puzzles param
+        for i in range(0,num_buying_puzzles):
+            operations.append('buying')
         # Add num_mazes param
         if maze_size > 0:
             for i in range(0,num_mazes):
@@ -562,6 +575,28 @@ class Equation(QtGui.QWidget):
             time.sleep(1)
             self.description = self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
             self.say(self.description)
+        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "buying" and self.visualized == False:
+            for pos in range(0,self.tasks[self.iter][2]):
+                # TODO: Make various items to be chosen
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self)
+                x = self.geometry().x()
+                y = self.geometry().y()
+                width = self.geometry().width()
+                height = self.geometry().height()
+                sizeOfItem = width/10
+                if (pos+1)*sizeOfItem >= width:
+                    posx = x+(pos+1)*sizeOfItem - width
+                    posy = y+sizeOfItem
+                else:
+                    posx = x+pos*sizeOfItem
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+                pic.show()
+                self.tempImages.append(pic)
+            self.visualized = True
+            time.sleep(1)
+            self.description = self.makeDescriptionOfBuyingPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
+            self.say(self.description)
 
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
@@ -619,7 +654,8 @@ class Equation(QtGui.QWidget):
             self.renderMaze(self.tasks[self.iter][4],event,qp)
             # Render the dynamic elements
         elif self.iter == len(self.tasks):
-            self.choice.render(qp)
+            if hasattr(self,'choice'):
+                self.choice.render(qp)
             self.visualized = True
             #
         qp.end()
@@ -680,7 +716,7 @@ class Equation(QtGui.QWidget):
     def drawText(self, event, qp):
         if self.iter < len(self.tasks) :
             qp.setPen(QtGui.QColor(0,0,255))
-            if self.tasks[self.iter][3] == "lang" or self.tasks[self.iter][3] == "clock" or self.tasks[self.iter][3] == "text":
+            if self.tasks[self.iter][3] == "lang" or self.tasks[self.iter][3] == "clock" or self.tasks[self.iter][3] == "text" or self.tasks[self.iter][3] == "buying":
                 qp.setFont(QtGui.QFont('Decorative',50))
             else:
                 qp.setFont(QtGui.QFont('Decorative',200))
@@ -735,6 +771,10 @@ class Equation(QtGui.QWidget):
         elif matop == "text":
             data, a, b = self.prepareTextPuzzle(matMaxValue)  
             equation_string = "\nAmount of Katie ice creams =  " 
+        elif matop == "buying":
+            data, a, b = self.prepareBuyingPuzzle(matMaxValue)  
+            # TODO: Replace Items with what is to be actually sold
+            equation_string = "\nAmount of Items that can be bought =  " 
         elif matop == "clock":
             a = self.prepareClockTestData()
             b = 0
@@ -761,7 +801,8 @@ class Equation(QtGui.QWidget):
         if self.iter != len(self.tasks):
             return
         if(e.isAutoRepeat() != True):
-            self.choice.processKeys(e)
+            if hasattr(self,'choice'):
+                self.choice.processKeys(e)
         return
 
     def proceedMazeKeys(self,e):
@@ -943,6 +984,9 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "text":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "buying":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "clock":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
@@ -992,6 +1036,40 @@ class Equation(QtGui.QWidget):
         relation = random.choice(relations.keys())
         kasia_items, sum_items = self.computeAnswerAndTotal(relations[relation],maxValue)
         return relation, kasia_items, sum_items 
+
+    # TODO: Add unit test
+    def generateCoins(self, total):
+        """ Based on provided total money generate coins that add up to given total"""
+        available_coins = [ (0,10) , (0,20), (0,50), (1,0), (2,0), (5,0)] 
+        pocket_coins = { (0,10) : 0 , (0,20) : 0, (0,50) : 0, (1,0) : 0 , (2,0) : 0, (5,0) : 0} 
+        value = 0
+        while value < total:
+            # Choose coin by random
+            (coin_zlotys, coin_groszys) = random.choice(available_coins)
+            #if coins alothogether do not exceed total sum of pocket money then
+            potential_value = value + coin_zlotys*100 + coin_groszys
+            if potential_value > total:
+                continue
+            value += coin_zlotys*100 + coin_groszys
+            # add coin to pocket money and update sum of coins accordingly
+            pocket_coins[(coin_zlotys,coin_groszys)] += 1
+        return pocket_coins 
+
+    def prepareBuyingPuzzle(self):
+        # TODO : Add more items
+        items = {"ice_cream.svg" : (0,50)}
+        item_to_buy = random.choice(items.keys())
+        (zlotys,groszys) = items[item_to_buy]
+        # Generate pocket money (multiplication of 10 groszysz)
+        item_value = zlotys*100 + groszys
+        pocket_money = (random.randint(100,4*(item_value)))/10*10;
+        # Compute potential number of items to buy
+        answer = int(pocket_money / item_value)
+        # Generate coins
+        coins = self.generateCoins(pocket_money)
+        return item_to_buy, answer, coins, 
+
+
 
     def prepareClockTestData(self):
         """ Load a clock face image , generate good answer and bad ones """
@@ -1064,6 +1142,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
+    parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
 
     args = parser.parse_args()
     config = EquationsConfig(args)
@@ -1082,6 +1161,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_clock_puzzles'),
                             config.isEnabled('num_mazes'),
                             config.isEnabled('num_text_puzzles'),
+                            config.isEnabled('num_buying_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
                             config.getMaximumBears())       # some initialization has to be done
