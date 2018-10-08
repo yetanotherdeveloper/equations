@@ -58,7 +58,7 @@ def testPrepareBuyingPuzzle(qtbot):
     random.seed(1)
     # It should be "ice_cream.svg" , 3 , 9
     item_to_buy, answer, coins = eqobj.prepareBuyingPuzzle()
-    assert(item_to_buy == "ice_cream.svg" and answer == 3 and 
+    assert(item_to_buy == "ice_cream-0-50.svg" and answer == 3 and 
             coins[(0,10)] == 4 and
             coins[(0,20)] == 2 and
             coins[(0,50)] == 2 and

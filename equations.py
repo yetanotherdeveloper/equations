@@ -555,7 +555,6 @@ class Equation(QtGui.QWidget):
             self.visualized = True
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "text" and self.visualized == False:
             for pos in range(0,self.tasks[self.iter][2]):
-                # TODO: Make an ice cream picture to be shown
                 pic = QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self)
                 x = self.geometry().x()
                 y = self.geometry().y()
@@ -576,26 +575,32 @@ class Equation(QtGui.QWidget):
             self.description = self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
             self.say(self.description)
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "buying" and self.visualized == False:
-            for pos in range(0,self.tasks[self.iter][2]):
-                # TODO: Make various items to be chosen
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self)
-                x = self.geometry().x()
-                y = self.geometry().y()
-                width = self.geometry().width()
-                height = self.geometry().height()
-                sizeOfItem = width/10
-                if (pos+1)*sizeOfItem >= width:
-                    posx = x+(pos+1)*sizeOfItem - width
-                    posy = y+sizeOfItem
-                else:
-                    posx = x+pos*sizeOfItem
-                    posy = y
-                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
-                pic.show()
-                self.tempImages.append(pic)
+            answer = self.tasks[self.iter][1]
+            pocket_coins = self.tasks[self.iter][2]
+            item_file = self.tasks[self.iter][4]
+            data = item_file.split('-')
+            pos = 0
+            # TODO: Make various items to be chosen
+            pic = QtSvg.QSvgWidget(self.resourcesPath + "/" + item_file, self)
+            x = self.geometry().x()
+            y = self.geometry().y()
+            width = self.geometry().width()
+            height = self.geometry().height()
+            sizeOfItem = width/10
+            if (pos+1)*sizeOfItem >= width:
+                posx = x+(pos+1)*sizeOfItem - width
+                posy = y+sizeOfItem
+            else:
+                posx = x+pos*sizeOfItem
+                posy = y
+            pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+            pic.show()
+            self.tempImages.append(pic)
+
             self.visualized = True
             time.sleep(1)
-            self.description = self.makeDescriptionOfBuyingPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
+            # TODO: Unit test 
+            self.description = self.makeDescriptionOfBuyingPuzzle(data[0].replace("_"," "),data[1], data[2].replace(".svg",""))
             self.say(self.description)
 
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
@@ -772,7 +777,7 @@ class Equation(QtGui.QWidget):
             data, a, b = self.prepareTextPuzzle(matMaxValue)  
             equation_string = "\nAmount of Katie ice creams =  " 
         elif matop == "buying":
-            data, a, b = self.prepareBuyingPuzzle(matMaxValue)  
+            data, a, b = self.prepareBuyingPuzzle()  
             # TODO: Replace Items with what is to be actually sold
             equation_string = "\nAmount of Items that can be bought =  " 
         elif matop == "clock":
@@ -1057,10 +1062,12 @@ class Equation(QtGui.QWidget):
 
     def prepareBuyingPuzzle(self):
         # TODO : Add more items
-        items = {"ice_cream.svg" : (0,50)}
-        item_to_buy = random.choice(items.keys())
-        (zlotys,groszys) = items[item_to_buy]
-        # Generate pocket money (multiplication of 10 groszysz)
+        items = ["ice_cream-0-50.svg"]
+        item_to_buy = random.choice(items)
+        # Get base name of item and its price
+        data = item_to_buy.split('-')
+        (zlotys,groszys) = (int(data[1]) , int(data[2].replace(".svg","")))
+        # Generate pocket money (multiplication of 10 groszys)
         item_value = zlotys*100 + groszys
         pocket_money = (random.randint(100,4*(item_value)))/10*10;
         # Compute potential number of items to buy
@@ -1110,6 +1117,20 @@ class Equation(QtGui.QWidget):
 
     def makeDescriptionOfTextPuzzle(self,sumItems, relationText):
         return "Katie and Stephanie have " + str(sumItems) + " ice creams all together. Stephanie has " + relationText + " Katie has. How many ice creams does Katie have?"
+
+    def makeDescriptionOfBuyingPuzzle(self,item, zlotys, groszys):
+        items = item + "s"
+        price = ""
+        if zlotys <> "0":
+            price += zlotys+ "zlotys "
+
+        if groszys <> "0":
+            if zlotys <> "0":
+                price += "and "
+            price += groszys+ "groszys "
+
+        return "One " + item + " costs " + price +". How many "+items+" can You buy?" 
+
 
     def makeDescriptionOfLangPuzzle(self,stringToPrint):
         """ Function that generates message to be uttered when Lang puzzle is presented"""
