@@ -5,10 +5,10 @@ Simple program that aims to generate some mathematical & language puzzles for ch
 Having a daughter which said "That was a very good day. I watched a lot of cartoons." , aim of this  project is to use children motivation to watch cartoons for educational purposes.
 
 # Features:
-- math puzzels: adding, substracting, multiplication, division, counting, text puzzles
+- math puzzels: adding, substracting, multiplication, division, counting, text puzzles, buying puzzle
 - language vocabulary puzzles: matching a word describing picture with appropriate picture
 - maze puzzles
-- Starts a netfix via browser and set timeout for watching, then shutdowns the system
+- Starts a netfix/youtube via browser and set timeout for watching, then shutdowns the system
 - fully configurable:
   - number of puzzles
   - range of values for math puzzles 
@@ -40,14 +40,14 @@ Math(adding):
 ![adding](data/screenshots/screen5.png)
 Math(text puzzle):
 ![adding](data/screenshots/screen11.png)
+Math(buying puzzle):
+![buying puzzle](data/screenshots/screen12.png)
 language puzzle:
 ![language puzzle](data/screenshots/screen6.png)
 clock puzzle:
 ![clock puzzle](data/screenshots/screen10.png)
 maze puzzle:
 ![maze puzzle](data/screenshots/screen9.png)
-buying puzzle:
-![buying puzzle](data/screenshots/screen12.png)
 Choose URL to launch(netflix, youtube:
 ![run cartoon](data/screenshots/screen13.png)
 setting maximum value for math puzzles from commandline:
