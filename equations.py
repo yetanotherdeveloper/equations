@@ -574,34 +574,43 @@ class Equation(QtGui.QWidget):
             time.sleep(1)
             self.description = self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
             self.say(self.description)
-        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "buying" and self.visualized == False:
-            answer = self.tasks[self.iter][1]
-            pocket_coins = self.tasks[self.iter][2]
-            item_file = self.tasks[self.iter][4]
-            data = item_file.split('-')
-            pos = 0
-            # TODO: Make various items to be chosen
-            pic = QtSvg.QSvgWidget(self.resourcesPath + "/" + item_file, self)
-            x = self.geometry().x()
-            y = self.geometry().y()
+        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "buying":
             width = self.geometry().width()
             height = self.geometry().height()
             sizeOfItem = width/10
-            if (pos+1)*sizeOfItem >= width:
-                posx = x+(pos+1)*sizeOfItem - width
-                posy = y+sizeOfItem
-            else:
-                posx = x+pos*sizeOfItem
-                posy = y
-            pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
-            pic.show()
-            self.tempImages.append(pic)
+            if self.visualized == False:
+                answer = self.tasks[self.iter][1]
+                pocket_coins = self.tasks[self.iter][2]
+                item_file = self.tasks[self.iter][4]
+                data = item_file.split('-')
+                pos = 0
+                # TODO: Make various items to be chosen
+                pic = QtSvg.QSvgWidget(self.resourcesPath + "/" + item_file, self)
+                x = self.geometry().x()
+                y = self.geometry().y()
+                if (pos+1)*sizeOfItem >= width:
+                    posx = x+(pos+1)*sizeOfItem - width
+                    posy = y+sizeOfItem
+                else:
+                    posx = x+pos*sizeOfItem
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+                pic.show()
+                self.tempImages.append(pic)
+                # Presenting pocket money
+                self.drawCoins(pocket_coins,0,sizeOfItem*1.75,sizeOfItem,sizeOfItem*0.75)
 
-            self.visualized = True
-            time.sleep(1)
-            # TODO: Unit test 
-            self.description = self.makeDescriptionOfBuyingPuzzle(data[0].replace("_"," "),data[1], data[2].replace(".svg",""))
-            self.say(self.description)
+                self.visualized = True
+                time.sleep(1)
+                # TODO: Unit test 
+                self.description = self.makeDescriptionOfBuyingPuzzle(data[0].replace("_"," "),data[1], data[2].replace(".svg",""))
+                self.say(self.description)
+            qp.setPen(QtGui.QColor(0,0,100))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(sizeOfItem,sizeOfItem/2, QtCore.QString(self.price))
+            qp.setPen(QtGui.QColor(0,0,100))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(0,sizeOfItem*1.6, QtCore.QString("Pocket money:"))
 
         elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
             # TODO: put this in the middle
@@ -665,6 +674,56 @@ class Equation(QtGui.QWidget):
             #
         qp.end()
         self.update()
+    
+    def drawCoin(self,image_file,startx,starty,coin_size,amount):
+
+        for i in range(0,amount):
+            pic = QtSvg.QSvgWidget(image_file, self)
+            x = self.geometry().x()
+            y = self.geometry().y()
+            width = self.geometry().width()
+            height = self.geometry().height()
+            if (i+1)*coin_size >= width:
+                posx = startx+x+(i+1)*coin_size - width
+                posy = starty+y+coin_size
+            else:
+                posx = startx+x+i*coin_size
+                posy = starty+y
+            pic.setGeometry(posx,posy,coin_size,coin_size)
+            pic.show()
+            self.tempImages.append(pic)
+        return
+
+
+    def drawCoins(self,pocket_coins,startx,starty,zloty_size,grosz_size):
+
+        posx = startx
+        posy = starty
+        fives = pocket_coins[(5,0)]
+        self.drawCoin(self.resourcesPath + "/piec.svg",posx,posy,zloty_size,fives)
+        posx += fives*zloty_size
+
+        twos = pocket_coins[(2,0)]
+        self.drawCoin(self.resourcesPath + "/dwa.svg",posx,posy,zloty_size,twos)
+        posx += twos*zloty_size
+
+        ones = pocket_coins[(1,0)]
+        self.drawCoin(self.resourcesPath + "/jeden.svg",posx,posy,zloty_size,ones)
+        posx += ones*zloty_size
+
+
+        fives = pocket_coins[(0,50)]
+        self.drawCoin(self.resourcesPath + "/50cents.svg",posx,posy,grosz_size,fives)
+        posx += fives*grosz_size
+
+        twos = pocket_coins[(0,20)]
+        self.drawCoin(self.resourcesPath + "/20cents.svg",posx,posy,grosz_size,twos)
+        posx += twos*grosz_size
+
+        ones = pocket_coins[(0,10)]
+        self.drawCoin(self.resourcesPath + "/10cents.svg",posx,posy,grosz_size,ones)
+        posx += ones*grosz_size
+        return
 
     def renderMaze(self,maze, event, qp):
         """ Draw actual labirynth based on parameter named maze"""
@@ -1062,7 +1121,7 @@ class Equation(QtGui.QWidget):
 
     def prepareBuyingPuzzle(self):
         # TODO : Add more items
-        items = ["ice_cream-0-50.svg"]
+        items = ["ice_cream-0-50.svg","bear-2-0.svg"]
         item_to_buy = random.choice(items)
         # Get base name of item and its price
         data = item_to_buy.split('-')
@@ -1122,13 +1181,13 @@ class Equation(QtGui.QWidget):
         items = item + "s"
         price = ""
         if zlotys <> "0":
-            price += zlotys+ "zlotys "
+            price += zlotys+ " dollars "
 
         if groszys <> "0":
             if zlotys <> "0":
                 price += "and "
-            price += groszys+ "groszys "
-
+            price += groszys+ " cents "
+        self.price = "= "+str(zlotys)+"."+str(groszys)+" $"
         return "One " + item + " costs " + price +". How many "+items+" can You buy?" 
 
 
