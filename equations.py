@@ -262,7 +262,7 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
-            if args.set_daily_counter > 0:
+            if args.set_daily_counter >= 0:
                 self.data['daily_counter'] = args.set_daily_counter
                 self.terminate = True;
                 self.print_config();
@@ -1165,7 +1165,7 @@ class Equation(QtGui.QWidget):
         #subprocess.Popen(["espeak","-s 150",text])
         # this one is for festival tts
         p1 = subprocess.Popen(["echo",text], stdout=subprocess.PIPE)
-        subprocess.Popen(["festival","--tts"], stdin=p1.stdout)
+        subprocess.Popen(["padsp","/opt/festival/bin/festival","--tts"], stdin=p1.stdout)
     def addPrefix(self, text):
         if text[0] =='a' or text[0] =='u' or text[0] =='i' or text[0] =='e' or text[0] =='y' or text[0] =='o':
            return "an " + text 
