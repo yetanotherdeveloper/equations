@@ -16,7 +16,7 @@ import time
 import math
 
 # TODO:
-# config: one time session length, ULR to open
+# config: one time session length, 
 # division fibonacci, derivatives
 # Open netflix in kids profile
 # Make a function with setting comnmandline (avoid copy paste)
@@ -1083,7 +1083,8 @@ class Equation(QtGui.QWidget):
 
     def computeAnswerAndTotal(self, param_pair, maxValue):
         # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
-        kasia_items =  random.randint(2, int((maxValue - param_pair[1])/(1 + param_pair[0])))
+        # max(2,2 - param_pair[1]) as 2 - 3 may give -1 for stephane items
+        kasia_items =  random.randint(max(2,2 - param_pair[1]), int((maxValue - param_pair[1])/(1 + param_pair[0])))
         stephane_items = kasia_items*param_pair[0] + param_pair[1]
         if stephane_items != int(stephane_items):
             stephane_items = int(stephane_items)
