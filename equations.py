@@ -412,10 +412,18 @@ class Equation(QtGui.QWidget):
             self.parent = parent
             self.x = startx
             self.y = starty
-            for url in choices:
-                pic = QtSvg.QSvgWidget(resourcesPath + choices[url], self.parent)
+            self.executions = []
+            for url in sorted(choices):
+                # Based on extension of file, load SVG or PNG
+                if choices[url][-4:] == ".svg":
+                    pic = QtSvg.QSvgWidget(resourcesPath + choices[url], self.parent)
+                else:
+                    pixmap = QtGui.QPixmap(choices[url]) 
+                    pic = QtGui.QLabel(self.parent)
+                    pic.setPixmap(pixmap)
                 pic.setGeometry(self.startx + i*self.stepx,self.starty,self.width,self.height)
                 self.candidates[url] = pic
+                self.executions.append(url)
                 i += 1
 
         def render(self,qp):
@@ -447,18 +455,24 @@ class Equation(QtGui.QWidget):
                 for key in self.candidates:
                     self.parent.hideImages([self.candidates[key]])
                 self.chosen = True
-                self.runCartoons(list(self.candidates.keys())[i])
+                self.runContent(self.executions[i])
                 del self.candidates
 
 
-        def runCartoons(self,url):
+        def runContent(self,content):
             # Draw pictures of netflix and youtube
             if self.dry_run == False:
                 # Calculate time allowed for watching cartoons
                 subprocess.call(["sudo","shutdown","-h","+"+str(self.timeToWatch)])
-                subprocess.Popen(["google-chrome",
-                                 "--start-maximized",
-                                 "--app="+url])
+                # If HTTP is at the beginning then use browser
+                print("content executuion: %s" % (content))
+                if content[0:4] == "http":                 
+                    subprocess.Popen(["google-chrome",
+                                     "--start-maximized",
+                                     "--app="+content])
+                else:
+                    # Run game
+                    subprocess.Popen([content])
             else:
                 exit()
             return
@@ -1003,7 +1017,7 @@ class Equation(QtGui.QWidget):
 
     def prepareChoice(self):
         self.hideImages(self.tempMedals)
-        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg"}
+        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg", "/home/jacek-home/TokiTori2/TokiTori2.bin.x86_64" : "/home/jacek-home/TokiTori2/app_icon.png"}
         # Calculate time to play cartoons for
         timeToWatch = 20 
         if self.iter > self.numMistakes:
