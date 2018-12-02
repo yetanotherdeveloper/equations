@@ -172,7 +172,7 @@ class EquationsConfig:
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
                       'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
                       'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10,
-                      'maze_size' : 8}
+                      'maze_size' : 8, 'content' : {}}
         # If there is a file unpickle it
         # then check the data
         # if data is obsolete then reinstantate date and zero the counter of daily watching
@@ -302,12 +302,35 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
+            if args.add_content != "":
+                self.terminate = True;
+                self.add_content(args.add_content)
+                self.list_content()
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return
+
+            if args.remove_content != -1:
+                self.terminate = True;
+                self.remove_content(args.remove_content)
+                self.list_content()
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return
+
             # If there was option to print config then
             # do so, and make program terminated 
             if args.print_config == True:
                 self.print_config();
                 self.terminate = True;
                 return;
+
+            # List pool of content
+            if args.list_content == True:
+                self.list_content()
+                self.terminate = True;
+                return;
+
             
             if self.data['day'] != datetime.datetime.now().day:
                 self.data['day'] = datetime.datetime.now().day
@@ -350,10 +373,44 @@ class EquationsConfig:
                         maximum_value: %d
                         maze_size: %d
                         maximum_bears: %d
+                        content: %d
                                     """ %
                          (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_mazes'],  self.data['num_text_puzzles'], self.data['num_buying_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears']))
-        
+self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_mazes'],  self.data['num_text_puzzles'], self.data['num_buying_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears'],len(self.data['content'])))
+
+    def list_content(self):
+        i = 0
+        print("Content:\n")
+        for entry in self.data['content']:
+            print(str(i)+" "+entry+" : "+self.data['content'][entry])
+            i+=1
+        return
+
+    def add_content(self, entry):
+        command = entry[0:entry.find(':')]
+        picture =  entry[entry.find(':')+1:]
+        if os.path.isfile(picture) and command != "":
+           self.data['content'][command] = picture 
+        else:
+            print("\nError adding content! eg. --add_content <command>:<path to picture>") 
+        return
+
+    def remove_content(self, index):
+        i = 0
+        import pdb; pdb.set_trace()
+        if index < 0 or index > len(self.data['content']):
+            print("Error removing content: invalid index")
+            return
+        key = ""
+        for entry in self.data['content']:
+            print(str(i)+" "+entry)
+            if i == index:
+                key = entry
+            i+=1
+        self.data['content'].pop(key, None)
+        return
+
+
     def shouldRun(self):
         """ Function to decide if this session is legitimate to play cartoons"""
         return self.run
@@ -369,6 +426,9 @@ self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_
 
     def getMaximumBears(self):
         return self.data['maximum_bears']
+
+    def getContent(self):
+        return self.data['content']
 
     def isEnabled(self, key):
         # In case of unknown key (there is not updated config stored on platform
@@ -465,7 +525,6 @@ class Equation(QtGui.QWidget):
                 # Calculate time allowed for watching cartoons
                 subprocess.call(["sudo","shutdown","-h","+"+str(self.timeToWatch)])
                 # If HTTP is at the beginning then use browser
-                print("content executuion: %s" % (content))
                 if content[0:4] == "http":                 
                     subprocess.Popen(["google-chrome",
                                      "--start-maximized",
@@ -480,7 +539,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears):
+                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears, content):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -488,6 +547,7 @@ class Equation(QtGui.QWidget):
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.images = self.resourcesPath + "/data/images/"
         self.description = ""
+        self.content = content
         self.tasks = []
         self.tempImages = []
         self.tempMedals = []
@@ -1017,7 +1077,11 @@ class Equation(QtGui.QWidget):
 
     def prepareChoice(self):
         self.hideImages(self.tempMedals)
-        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg", "/home/jacek-home/TokiTori2/TokiTori2.bin.x86_64" : "/home/jacek-home/TokiTori2/app_icon.png"}
+        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg"}
+        # Extend chocies with user defined content
+        for entry in self.content:
+           choices[entry] = self.content[entry]       
+ 
         # Calculate time to play cartoons for
         timeToWatch = 20 
         if self.iter > self.numMistakes:
@@ -1238,6 +1302,9 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
+    parser.add_argument("--add_content", help="<command to execute>:<picture>", type=str, default="")
+    parser.add_argument("--remove_content", help="remove selected content (use list_content to get number)", type=int, default=-1)
+    parser.add_argument("--list_content", help="Lists pool of commands to execute", action="store_true")
 
     args = parser.parse_args()
     config = EquationsConfig(args)
@@ -1259,7 +1326,8 @@ if __name__ == "__main__":
                             config.isEnabled('num_buying_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
-                            config.getMaximumBears())       # some initialization has to be done
+                            config.getMaximumBears(),       # some initialization has to be done
+                            config.getContent())       
     else:
         print "Daily limit exhausted" 
         stop = Stop(args)    
