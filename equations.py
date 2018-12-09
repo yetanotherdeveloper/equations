@@ -1200,14 +1200,14 @@ class Equation(QtGui.QWidget):
 
     def prepareBuyingPuzzle(self):
         # TODO : Add more items
-        items = ["ice_cream-0-50.svg","bear-2-0.svg"]
+        items = ["ice_cream-0-50.svg","bear-2-0.svg","lollipop-0-20.svg","cookie-0-30.svg"]
         item_to_buy = random.choice(items)
         # Get base name of item and its price
         data = item_to_buy.split('-')
         (zlotys,groszys) = (int(data[1]) , int(data[2].replace(".svg","")))
         # Generate pocket money (multiplication of 10 groszys)
         item_value = zlotys*100 + groszys
-        pocket_money = (random.randint(100,4*(item_value)))/10*10;
+        pocket_money = (random.randint(int(item_value*0.75),4*(item_value)))/10*10;
         # Compute potential number of items to buy
         answer = int(pocket_money / item_value)
         # Generate coins
