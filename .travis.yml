@@ -8,6 +8,7 @@ dist: xenial
 
 before_install:
 - sudo apt-get install -y python-qt4
+- sudo pip3 install pytest-qt
 
 script:
 - pytest
