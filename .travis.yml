@@ -1,10 +1,14 @@
 language: python
 
 python:
-- 2.7
+- 3.4
 
-install:
-pip install --user -r requirements.txt
+os: linux
+dist: xenial
+
+before_install:
+- sudo apt-get install -y python-qt4
+- sudo pip install pytest-qt
 
 script:
 - pytest
