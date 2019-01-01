@@ -737,6 +737,17 @@ class Equation(QtGui.QWidget):
             qp.translate(midx,midy)
             qp.rotate(degrees)
             qp.drawLine(0,0,0 , 0 - sizeOfClock*0.15)
+        elif self.iter < len(self.tasks) and (
+           self.tasks[self.iter][3] == "+" or
+           self.tasks[self.iter][3] == "/" or
+           self.tasks[self.iter][3] == "-" or
+           self.tasks[self.iter][3] == "*"):
+
+           if self.visualized == False:
+                self.visualized = True
+                time.sleep(1)
+                self.description = self.makeDescriptionOfMathPuzzle(self.tasks[self.iter][1],self.tasks[self.iter][2],self.tasks[self.iter][3])
+                self.say(self.description)
 
         elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
             self.renderMaze(self.tasks[self.iter][4],event,qp)
@@ -1249,6 +1260,10 @@ class Equation(QtGui.QWidget):
            return "an " + text 
         else:
             return "a " + text
+
+    def makeDescriptionOfMathPuzzle(self,a,b,matop):
+        mapping = {'+' : "plus", '-' : "minus", '*' : "times", '/' : "divided by"} 
+        return "What is "+str(a)+" "+mapping[matop] +" "+str(b)+" ?"
 
     def makeDescriptionOfBearsPuzzle(self):
         return "How many bears You can see?"
