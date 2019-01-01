@@ -1187,7 +1187,7 @@ class Equation(QtGui.QWidget):
         # TODO: Add unit test , mandatory
         # Stephany has... 
         relations = {"three more than": (1,3) ,"two more than": (1,2) ,"one more than" : (1,1), "one less than" : (1,-1), "two less than" : (1,-2), "three less than" : (1,-3), "twice as much as" : (2,0), "half of what" : (0.5, 0)} 
-        relation = random.choice(relations.keys())
+        relation = random.choice(list(relations.keys()))
         kasia_items, sum_items = self.computeAnswerAndTotal(relations[relation],maxValue)
         return relation, kasia_items, sum_items 
 
@@ -1274,11 +1274,11 @@ class Equation(QtGui.QWidget):
     def makeDescriptionOfBuyingPuzzle(self,item, zlotys, groszys):
         items = item + "s"
         price = ""
-        if zlotys <> "0":
+        if zlotys is not "0":
             price += zlotys+ " dollars "
 
-        if groszys <> "0":
-            if zlotys <> "0":
+        if groszys is not "0":
+            if zlotys is not "0":
                 price += "and "
             price += groszys+ " cents "
         self.price = "= "+str(zlotys)+"."+str(groszys)+" $"
@@ -1344,6 +1344,6 @@ if __name__ == "__main__":
                             config.getMaximumBears(),       # some initialization has to be done
                             config.getContent())       
     else:
-        print "Daily limit exhausted" 
+        print("Daily limit exhausted")
         stop = Stop(args)    
     sys.exit(app.exec_())
