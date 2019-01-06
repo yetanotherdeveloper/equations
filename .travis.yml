@@ -27,8 +27,7 @@ before_script:
 - make -j 2
 - sudo make install
 - cd ../equations
-- sudo pip install pytest-qt
-
+- pip install --user pytest-qt
 script:
 - python -m pytest
 
