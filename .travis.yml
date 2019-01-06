@@ -25,6 +25,6 @@ before_script:
 - cd ../equations
 
 script:
-- pytest
+- python -m pytest
 
 
