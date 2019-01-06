@@ -7,7 +7,7 @@ branches:
    only:
      - master
 
-before_script:
+before_install:
 - cd ..
 - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
 - tar -xvf sip-4.14.1.tar.gz
@@ -23,6 +23,8 @@ before_script:
 - make -j 2
 - sudo make install
 - cd ../equations
+
+install:
 - pip install --user -r requirements.txt
 
 script:
