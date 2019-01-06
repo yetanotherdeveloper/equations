@@ -32,6 +32,6 @@ before_script:
 - cd ../equations
 - sudo pip install pytest-qt
 script:
-- python -m pytest
+- pytest --verbose
 
 
