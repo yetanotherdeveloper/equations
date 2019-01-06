@@ -3,10 +3,35 @@ language: python
 python:
 - 2.7
 
-install:
-pip install --user -r requirements.txt
+os: linux
+distro: xenial
 
+branches:
+   only:
+     - master
+
+virtualenv:
+   system_site_packages: true
+
+before_script:
+- cd ..
+- curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
+- ls
+- tar -xvzf sip-4.14.1.tar.gz
+- cd sip-4.14.1
+- python configure.py
+- make -j 2
+- sudo make install
+- cd ..
+- curl -L -O http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.9.5/PyQt-x11-gpl-4.9.5.tar.gz
+- tar -xvzf PyQt-x11-gpl-4.9.5.tar.gz
+- cd PyQt-x11-gpl-4.9.5
+- python configure.py --confirm-license
+- make -j 2
+- sudo make install
+- cd ../equations
+- sudo pip install pytest-qt
 script:
-- pytest
+- pytest --verbose
 
 
