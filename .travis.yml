@@ -23,6 +23,7 @@ before_script:
 - make -j 2
 - sudo make install
 - cd ../equations
+- pip install --user -r requirements.txt
 
 script:
 - python -m pytest
