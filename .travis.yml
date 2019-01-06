@@ -25,7 +25,7 @@ before_install:
 - cd ../equations
 
 install:
-- pip install --user -r requirements.txt
+- sudo pip install pytest-qt
 
 script:
 - python -m pytest
