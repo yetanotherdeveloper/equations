@@ -10,6 +10,9 @@ branches:
    only:
      - master
 
+virtualenv:
+   system_site_packages: true
+
 before_script:
 - cd ..
 - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
@@ -27,7 +30,7 @@ before_script:
 - make -j 2
 - sudo make install
 - cd ../equations
-- pip install --user pytest-qt
+- sudo pip install pytest-qt
 script:
 - python -m pytest
 
