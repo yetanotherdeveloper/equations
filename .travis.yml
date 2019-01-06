@@ -3,6 +3,9 @@ language: python
 python:
 - 2.7
 
+os: linux
+distro: xenial
+
 branches:
    only:
      - master
@@ -10,6 +13,7 @@ branches:
 before_script:
 - cd ..
 - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
+- ls
 - tar -xvzf sip-4.14.1.tar.gz
 - cd sip-4.14.1
 - python configure.py
