@@ -172,7 +172,7 @@ class EquationsConfig:
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
                       'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
                       'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10,
-                      'maze_size' : 8, 'content' : {}}
+                      'maze_size' : 8, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
         # if data is obsolete then reinstantate date and zero the counter of daily watching
@@ -302,6 +302,14 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
+            if args.tts <> "":
+                self.data['tts'] = args.tts
+                self.terminate = True;
+                self.print_config();
+                configFile = open(configDir+"config","w")
+                pickle.dump(self.data,configFile)
+                return;
+
             if args.add_content != "":
                 self.terminate = True;
                 self.add_content(args.add_content)
@@ -356,27 +364,37 @@ class EquationsConfig:
         configFile = open(configDir+"config","w")
         pickle.dump(self.data,configFile)
 
+    def print_attrib_int(self, key):
+        if key in self.data:
+            print("%s: %d" %(key,self.data[key]))
+        return
+
+    def print_attrib_str(self, key):
+        if key in self.data:
+            print("%s: %s" %(key,self.data[key]))
+        return
+        return
+
     def print_config(self):
-        print(""" Configuration: 
-                        num_adds: %d
-                        num_subs: %d
-                        num_muls: %d
-                        num_divs: %d
-                        num_lang_puzzles: %d
-                        num_clock_puzzles: %d
-                        num_mazes: %d
-                        num_text_puzzles: %d
-                        num_buying_puzzles: %d
-                        day: %d   
-                        daily_counter: %d
-                        maximum_daily_counter: %d
-                        maximum_value: %d
-                        maze_size: %d
-                        maximum_bears: %d
-                        content: %d
-                                    """ %
-                         (self.data['num_adds'],self.data['num_subs'],self.data['num_muls'],self.data['num_divs'],
-self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_mazes'],  self.data['num_text_puzzles'], self.data['num_buying_puzzles'], self.data['day'],self.data['daily_counter'],self.data['maximum_daily_counter'],self.data['maximum_value'],self.data['maze_size'],self.data['maximum_bears'],len(self.data['content'])))
+        print(" Configuration: ")
+        self.print_attrib_int('num_adds')
+        self.print_attrib_int('num_subs')
+        self.print_attrib_int('num_muls')
+        self.print_attrib_int('num_divs')
+        self.print_attrib_int('num_lang_puzzles')
+        self.print_attrib_int('num_clock_puzzles')
+        self.print_attrib_int('num_mazes')
+        self.print_attrib_int('num_text_puzzles')
+        self.print_attrib_int('num_buying_puzzles')
+        self.print_attrib_int('daily_counter')
+        self.print_attrib_int('maximum_daily_counter')
+        self.print_attrib_int('maximum_value')
+        self.print_attrib_int('maze_size')
+        self.print_attrib_int('maximum_bears')
+        self.print_attrib_str('tts')
+
+        if 'content' in self.data:
+            print("%s: %d" %('content',len(self.data['content'])))
 
     def list_content(self):
         i = 0
@@ -397,7 +415,6 @@ self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_
 
     def remove_content(self, index):
         i = 0
-        import pdb; pdb.set_trace()
         if index < 0 or index > len(self.data['content']):
             print("Error removing content: invalid index")
             return
@@ -429,6 +446,9 @@ self.data['num_lang_puzzles'], self.data['num_clock_puzzles'],   self.data['num_
 
     def getContent(self):
         return self.data['content']
+
+    def getTTS(self):
+        return self.data['tts']
 
     def isEnabled(self, key):
         # In case of unknown key (there is not updated config stored on platform
@@ -539,7 +559,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears, content):
+                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears, tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -547,6 +567,7 @@ class Equation(QtGui.QWidget):
         self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
         self.images = self.resourcesPath + "/data/images/"
         self.description = ""
+        self.tts = tts
         self.content = content
         self.tasks = []
         self.tempImages = []
@@ -1254,7 +1275,7 @@ class Equation(QtGui.QWidget):
         #subprocess.Popen(["espeak","-s 150",text])
         # this one is for festival tts
         p1 = subprocess.Popen(["echo",text], stdout=subprocess.PIPE)
-        subprocess.Popen(["padsp","/opt/festival/bin/festival","--tts"], stdin=p1.stdout)
+        subprocess.Popen(["padsp",self.tts,"--tts"], stdin=p1.stdout)
     def addPrefix(self, text):
         if text[0] =='a' or text[0] =='u' or text[0] =='i' or text[0] =='e' or text[0] =='y' or text[0] =='o':
            return "an " + text 
@@ -1317,6 +1338,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
+    parser.add_argument("--tts", help="<command to festival>", type=str, default="")
     parser.add_argument("--add_content", help="<command to execute>:<picture>", type=str, default="")
     parser.add_argument("--remove_content", help="remove selected content (use list_content to get number)", type=int, default=-1)
     parser.add_argument("--list_content", help="Lists pool of commands to execute", action="store_true")
@@ -1342,6 +1364,7 @@ if __name__ == "__main__":
                             config.getMaximumValue(),
                             config.getMazeSize(),
                             config.getMaximumBears(),       # some initialization has to be done
+                            config.getTTS(),
                             config.getContent())       
     else:
         print "Daily limit exhausted" 
