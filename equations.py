@@ -302,6 +302,9 @@ class EquationsConfig:
                 pickle.dump(self.data,configFile)
                 return;
 
+            if 'tts' not in self.data:
+                self.data['tts'] = festival
+
             if args.tts <> "":
                 self.data['tts'] = args.tts
                 self.terminate = True;
