@@ -22,7 +22,6 @@ import math
 # Make a function with setting comnmandline (avoid copy paste)
 # Dungeon keeper on an other game to start alternatively to netflix
 # TODO: fix unit test so it show a maze
-# TODO: make a unit tests for maze generation , eg. longest route calculation
 # TODO: make rectungalar mazes
 # TODO: unit tests for clock puzzle
 
@@ -170,8 +169,7 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0,
-                      'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10,
+                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangements_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
                       'maze_size' : 8, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
@@ -184,123 +182,22 @@ class EquationsConfig:
             configFile = open(configDir+"config","r")
             self.data = pickle.load(configFile)
 
-            # Add
-            if args.set_num_adds > -1:
-                self.data['num_adds'] = args.set_num_adds
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            # Sub
-            if args.set_num_subs > -1:
-                self.data['num_subs'] = args.set_num_subs
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-            # Mul
-            if args.set_num_muls > -1:
-                self.data['num_muls'] = args.set_num_muls
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-           # Div
-            if args.set_num_divs > -1:
-                self.data['num_divs'] = args.set_num_divs
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-           # Language Puzzles
-            if args.set_num_lang_puzzles > -1:
-                self.data['num_lang_puzzles'] = args.set_num_lang_puzzles
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-           # Text Puzzles
-            if args.set_num_text_puzzles > -1:
-                self.data['num_text_puzzles'] = args.set_num_text_puzzles
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-           # Buying Puzzles
-            if args.set_num_buying_puzzles > -1:
-                self.data['num_buying_puzzles'] = args.set_num_buying_puzzles
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-           # Clock Puzzles
-            if args.set_num_clock_puzzles > -1:
-                self.data['num_clock_puzzles'] = args.set_num_clock_puzzles
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-           # Maze Puzzles
-            if args.set_num_mazes > -1:
-                self.data['num_mazes'] = args.set_num_mazes
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-            if args.set_daily_counter >= 0:
-                self.data['daily_counter'] = args.set_daily_counter
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-            if args.set_maximum_daily_counter > 0:
-                self.data['maximum_daily_counter'] = args.set_maximum_daily_counter
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-            if args.set_maximum_value >= 0:
-                self.data['maximum_value'] = args.set_maximum_value
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-            if args.set_maze_size>= 0:
-                self.data['maze_size'] = args.set_maze_size
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
-
-            if args.set_maximum_bears >= 0:
-                self.data['maximum_bears'] = args.set_maximum_bears
-                self.terminate = True;
-                self.print_config();
-                configFile = open(configDir+"config","w")
-                pickle.dump(self.data,configFile)
-                return;
+            self.process_arg(configDir,'num_adds', args.set_num_adds, -1)
+            self.process_arg(configDir,'num_subs', args.set_num_subs, -1)
+            self.process_arg(configDir,'num_muls', args.set_num_muls, -1)
+            self.process_arg(configDir,'num_divs', args.set_num_divs, -1)
+            self.process_arg(configDir,'num_lang_puzzles', args.set_num_lang_puzzles, -1)
+            self.process_arg(configDir,'num_text_puzzles', args.set_num_text_puzzles, -1)
+            self.process_arg(configDir,'num_buying_puzzles', args.set_num_buying_puzzles, -1)
+            self.process_arg(configDir,'num_arrangements_puzzles', args.set_num_arrangement_puzzles, -1)
+            self.process_arg(configDir,'num_clock_puzzles', args.set_num_clock_puzzles, -1)
+            self.process_arg(configDir,'num_mazes', args.set_num_mazes, -1)
+            self.process_arg(configDir,'daily_counter', args.set_daily_counter, -1)
+            self.process_arg(configDir,'maximum_daily_counter', args.set_maximum_daily_counter, 0)
+            self.process_arg(configDir,'maximum_value', args.set_maximum_value, -1)
+            self.process_arg(configDir,'maze_size', args.set_maze_size, -1)
+            self.process_arg(configDir,'maximum_arrangement_size', args.set_maximum_arrangement_size, -1)
+            self.process_arg(configDir,'maximum_bears', args.set_maximum_bears, -1)
 
             if 'tts' not in self.data:
                 self.data['tts'] = festival
@@ -367,6 +264,15 @@ class EquationsConfig:
         configFile = open(configDir+"config","w")
         pickle.dump(self.data,configFile)
 
+    def process_arg(self, configDir, key, arg_value, default_value):
+        if key not in self.data or arg_value > default_value:
+            self.data[key] = arg_value
+            self.terminate = True;
+            self.print_config();
+            configFile = open(configDir+"config","w")
+            pickle.dump(self.data,configFile)
+            return;
+
     def print_attrib_int(self, key):
         if key in self.data:
             print("%s: %d" %(key,self.data[key]))
@@ -394,6 +300,7 @@ class EquationsConfig:
         self.print_attrib_int('maximum_value')
         self.print_attrib_int('maze_size')
         self.print_attrib_int('maximum_bears')
+        self.print_attrib_int('maximum_arrangement_size')
         self.print_attrib_str('tts')
 
         if 'content' in self.data:
@@ -446,6 +353,9 @@ class EquationsConfig:
 
     def getMaximumBears(self):
         return self.data['maximum_bears']
+
+    def getMaximumArrangementSize(self):
+        return self.data['maximum_arrangement_size']
 
     def getContent(self):
         return self.data['content']
@@ -562,7 +472,8 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, maximum_value, maze_size, maximum_bears, tts, content):
+                            num_text_puzzles, num_buying_puzzles, num_arrangements_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
+                             tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -1330,6 +1241,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
     parser.add_argument("--set_maze_size", help="Set maze_size in operations to configuration file", type=int, default=-1)
     parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
+    parser.add_argument("--set_maximum_arrangement_size", help="Maximum value in Arrangements riddles", type=int, default=-1)
     parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
     # Number of specific riddles
     parser.add_argument("--set_num_adds", help="Number of Adding riddles", type=int, default=-1)
@@ -1341,6 +1253,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
+    parser.add_argument("--set_num_arrangement_puzzles", help="Number of Arrangements riddles", type=int, default=-1)
     parser.add_argument("--tts", help="<command to festival>", type=str, default="")
     parser.add_argument("--add_content", help="<command to execute>:<picture>", type=str, default="")
     parser.add_argument("--remove_content", help="remove selected content (use list_content to get number)", type=int, default=-1)
@@ -1364,9 +1277,11 @@ if __name__ == "__main__":
                             config.isEnabled('num_mazes'),
                             config.isEnabled('num_text_puzzles'),
                             config.isEnabled('num_buying_puzzles'),
+                            config.isEnabled('num_arrangements_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
-                            config.getMaximumBears(),       # some initialization has to be done
+                            config.getMaximumBears(),       
+                            config.getMaximumArrangementSize(),
                             config.getTTS(),
                             config.getContent())       
     else:
