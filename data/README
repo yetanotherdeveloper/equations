@@ -1,11 +1,11 @@
-Images comes from  UVic Humanities Computing and Media Centre and Half-Baked Software  
-http://hcmc.uvic.ca/clipart/
+#Images comes from  UVic Humanities Computing and Media Centre and Half-Baked Software  
+#http://hcmc.uvic.ca/clipart/
 
-How to download them?  list images file so it is an argiment of wget . for example:
-wget `tail -n 20 README` 
+#How to download them?  list images file so it is an argiment of wget . for example:
+#wget `tail -n 20 README` 
 
-animals:
-http://hcmc.uvic.ca/clipart/animals
+#animals:
+#http://hcmc.uvic.ca/clipart/animals
 
 hcmc.uvic.ca/clipart/animals/anemone-vt.gif
 hcmc.uvic.ca/clipart/animals/bear/bear-vt.gif
@@ -157,3 +157,62 @@ https://hcmc.uvic.ca/clipart/clothing/watch/watch-vb.gif
 https://hcmc.uvic.ca/clipart/clothing/tie/tie-wb.gif
 https://hcmc.uvic.ca/clipart/clothing/zipper/zipper-vb.gif
 https://hcmc.uvic.ca/clipart/clothing/wintercoat/wintercoat-vb.gif
+
+# Food
+https://hcmc.uvic.ca/clipart/food/apple/apple-vb.gif
+https://hcmc.uvic.ca/clipart/food/banana/banana-vb.gif
+https://hcmc.uvic.ca/clipart/food/beef/beef-vt.gif
+https://hcmc.uvic.ca/clipart/food/beer/beer-wt.gif
+https://hcmc.uvic.ca/clipart/food/bell-pepper/bell-pepper-vt.gif
+https://hcmc.uvic.ca/clipart/food/bread/bread-vb.gif
+https://hcmc.uvic.ca/clipart/food/broccoli/broccoli-vb.gif
+https://hcmc.uvic.ca/clipart/food/butter/butter-vb.gif
+https://hcmc.uvic.ca/clipart/food/burger/burger-vb.gif
+https://hcmc.uvic.ca/clipart/food/cake/cake-wb.gif
+https://hcmc.uvic.ca/clipart/food/can/can-vt.gif
+https://hcmc.uvic.ca/clipart/food/carrots/carrots-vb.gif
+https://hcmc.uvic.ca/clipart/food/cheese/cheese-vb.gif
+https://hcmc.uvic.ca/clipart/food/cherry/cherry-wt.gif
+https://hcmc.uvic.ca/clipart/food/chicken/chicken-vt.gif
+https://hcmc.uvic.ca/clipart/food/chillies/chillies-vb.gif
+https://hcmc.uvic.ca/clipart/food/corn/corn-vb.gif
+https://hcmc.uvic.ca/clipart/food/cookie/cookie-vt.gif
+https://hcmc.uvic.ca/clipart/food/coffee/coffee-wb.gif
+https://hcmc.uvic.ca/clipart/food/coconut/coconut-vb.gif
+https://hcmc.uvic.ca/clipart/food/cucumber/cucumber-vt.gif
+https://hcmc.uvic.ca/clipart/food/dessert/dessert-vt.gif
+https://hcmc.uvic.ca/clipart/food/garlic/garlic-vb.gif
+https://hcmc.uvic.ca/clipart/food/ginger/ginger-vb.gif
+https://hcmc.uvic.ca/clipart/food/grapes/grapes-vt.gif
+https://hcmc.uvic.ca/clipart/food/ham/ham-vt.gif
+https://hcmc.uvic.ca/clipart/food/herbs/herbs-vt.gif
+https://hcmc.uvic.ca/clipart/food/honeydew/honeydew-vt.gif
+https://hcmc.uvic.ca/clipart/food/jam/jam-vt.gif
+https://hcmc.uvic.ca/clipart/food/lemon/lemon-vt.gif
+https://hcmc.uvic.ca/clipart/food/lettuce/lettuce-wt.gif
+https://hcmc.uvic.ca/clipart/food/milk/milk-vt.gif
+https://hcmc.uvic.ca/clipart/food/orange/orange-vt.gif
+https://hcmc.uvic.ca/clipart/food/pepper/pepper-wb.gif
+https://hcmc.uvic.ca/clipart/food/pineapple/pineapple-vb.gif
+https://hcmc.uvic.ca/clipart/food/pasta/pasta-vb.gif
+https://hcmc.uvic.ca/clipart/food/peas/peas-vt.gif
+https://hcmc.uvic.ca/clipart/food/pumpkin/pumpkin-wt.gif
+https://hcmc.uvic.ca/clipart/food/rice/rice-wt.gif
+https://hcmc.uvic.ca/clipart/food/potato/potato-wt.gif
+https://hcmc.uvic.ca/clipart/food/salt/salt-vt.gif
+https://hcmc.uvic.ca/clipart/food/sausage/sausage-vt.gif
+https://hcmc.uvic.ca/clipart/food/sandwich/sandwich-vt.gif
+https://hcmc.uvic.ca/clipart/food/salad/salad-vb.gif
+https://hcmc.uvic.ca/clipart/food/strawberry/strawberry-vb.gif
+https://hcmc.uvic.ca/clipart/food/watermelon/watermelon-vb.gif
+https://hcmc.uvic.ca/clipart/utensils/chopsticks/chopsticks-vb.gif
+https://hcmc.uvic.ca/clipart/utensils/fork/fork-vb.gif
+https://hcmc.uvic.ca/clipart/utensils/frying-pan/frying-pan-wb.gif
+https://hcmc.uvic.ca/clipart/utensils/mug/mug-vt.gif
+https://hcmc.uvic.ca/clipart/utensils/knife/knife-vb.gif
+https://hcmc.uvic.ca/clipart/utensils/ladle/ladle-vt.gif
+https://hcmc.uvic.ca/clipart/utensils/sieve/sieve-vt.gif
+https://hcmc.uvic.ca/clipart/utensils/pot/pot-vt.gif
+https://hcmc.uvic.ca/clipart/utensils/plate/plate-vt.gif
+https://hcmc.uvic.ca/clipart/utensils/spoon/spoon-wt.gif
+https://hcmc.uvic.ca/clipart/utensils/teapot/teapot-vt.gif
