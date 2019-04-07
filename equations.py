@@ -536,6 +536,7 @@ class Equation(QtGui.QWidget):
             self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
         self.iter = 0;
         self.showFullScreen()
+    # TODO(jczaja): make this an object 
     def paintEvent(self,event):
         qp = QtGui.QPainter()
         qp.begin(self)
