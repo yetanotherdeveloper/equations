@@ -388,6 +388,253 @@ class Stop(QtGui.QWidget):
         self.showFullScreen()
 
 class Equation(QtGui.QWidget):
+
+    class Visualization:
+        def __init__(self,tts):
+            self.tts = tts
+            self.description = ""
+
+        def say(self, text=None):
+            # This is one is for espeak tts
+            #subprocess.Popen(["espeak","-s 150",text])
+            # this one is for festival tts
+            if text == None:
+                text = self.description
+            p1 = subprocess.Popen(["echo", text], stdout=subprocess.PIPE)
+            subprocess.Popen(["padsp",self.tts,"--tts"], stdin=p1.stdout)
+
+        def Render(self, qp):
+            pass
+
+    class LangPuzzleVisualization(Visualization):
+        def __init__(self, label, pic, width, height, tts, stringToPrint, correctTime):
+
+            # TODO: put this in the middle
+            self.sizeOfAnimal = height/3
+            pixmap = pic.scaledToWidth(self.sizeOfAnimal)
+            #self.hideImages(self.tempImages)
+            self.tempImages = []
+            startx = self.geometry().width()/2 - self.sizeOfAnimal/2
+            starty = 0
+            label.setGeometry(startx,starty,self.sizeOfAnimal,self.sizeOfAnimal)
+            label.setPixmap(pixmap)
+            label.show()
+            self.tempImages.append(label)
+            #time.sleep(1)
+            self.description = self.makeDescription(stringToPrint)
+            self.say()
+
+        def makeDescription(self,stringToPrint):
+            """ Function that generates message to be uttered when Lang puzzle is presented"""
+            return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
+
+        
+    class BearsPuzzleVisualization(Visualization):
+        def __init__(self, pic, x, y, width, height, tts, numBears):
+
+            super(BearsPuzzleVisualization, self).__init__(tts)
+            self.tempImages = []
+            for pos in range(0,numBears):
+                sizeOfBear = width/10
+                if (pos+1)*sizeOfBear >= width:
+                    posx = x+(pos+1)*sizeOfBear - width
+                    posy = y+sizeOfBear
+                else:
+                    posx = x+pos*sizeOfBear
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
+                pic.show()
+                self.tempImages.append(pic)
+            self.description = self.makeDescription()
+            time.sleep(1)
+            self.say()
+            pass
+
+        def makeDescription(self):
+            return "How many bears You can see?"
+
+    class ClockPuzzleVisualization(Visualization):
+        def __init__(self, qp, pic, x, y, width, height, tts, strinToPrint, correctTime):
+
+            super(ClockPuzzleVisualization, self).__init__(tts)
+            sizeOfClock = self.geometry().width()/5
+            self.tempImages = []
+
+            pic = QtSvg.QSvgWidget(pic, self)
+            posx = self.geometry().width()/2 - sizeOfClock/2
+            posy = 0
+            pic.setGeometry(posx,posy,sizeOfClock,sizeOfClock)
+            self.tempImages.append(pic)
+            self.visualized = True
+            time.sleep(1)
+            self.description = self.makeDescriptionOfClockPuzzle(stringToPrint)
+            self.say()
+            pic.show()
+            # remove answer enumeration and leave only hour
+            degrees = correctAnswer * 360/12 
+            # Big pointer
+            midx = self.geometry().width()/2
+            midy = sizeOfClock*0.42
+            qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
+            qp.drawLine(midx,midy,midx,0 + sizeOfClock*0.2 )
+            # small pointer
+            qp.setPen(QtGui.QPen(QtCore.Qt.black, 13, QtCore.Qt.SolidLine))
+            qp.translate(midx,midy)
+            qp.rotate(degrees)
+            qp.drawLine(0,0,0 , 0 - sizeOfClock*0.15)
+
+        def makeDescription(self,stringToPrint):
+            """ Function that generates message to be uttered when Clock puzzle is presented"""
+            return "What time is it?" 
+
+    class TextPuzzleVisualization(Visualization):
+        def __init__(self, pic, x, y, width, height, tts, numItems, relation):
+
+            super(TextPuzzleVisualization, self).__init__(tts)
+            for pos in range(0,numItems):
+                pic = QtSvg.QSvgWidget(pic, self)
+                sizeOfItem = width/10
+                if (pos+1)*sizeOfItem >= width:
+                    posx = x+(pos+1)*sizeOfItem - width
+                    posy = y+sizeOfItem
+                else:
+                    posx = x+pos*sizeOfItem
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+                pic.show()
+                self.tempImages.append(pic)
+            time.sleep(1)
+            self.description = self.makeDescription(numItems, relation)
+            self.say()
+
+
+        def makeDescription(self, sumItems, relationText):
+            return "Katie and Stephanie have " + str(sumItems) + " ice creams all together. Stephanie has " + relationText + " Katie has. How many ice creams does Katie have?"
+
+    class BuyingPuzzleVisualization(Visualization):
+        def __init__(self, pic, x, y, width, height, tts, answer, pocket_coins, resourcePath, item_file):
+
+            super(BuyingPuzzleVisualization, self).__init__(tts)
+
+            self.x = x 
+            self.y = y
+            self.width = width
+            self.height = height
+            self.resourcesPath = resourcesPath
+
+            self.sizeOfItem = width/10
+            data = item_file.split('-')
+            pos = 0
+            # TODO: Make various items to be chosen
+            pic = QtSvg.QSvgWidget(resourcesPath + "/" + item_file, self)
+            if (pos+1)*sizeOfItem >= width:
+                posx = x+(pos+1)*self.sizeOfItem - width
+                posy = y+self.sizeOfItem
+            else:
+                posx = x+pos*self.sizeOfItem
+                posy = y
+            pic.setGeometry(posx,posy,self.sizeOfItem,self.sizeOfItem)
+            pic.show()
+            self.tempImages.append(pic)
+            # Presenting pocket money
+            self.drawCoins(pocket_coins,0,self.sizeOfItem*1.75,self.sizeOfItem,self.sizeOfItem*0.75)
+
+            self.visualized = True
+            time.sleep(1)
+            # TODO: Unit test 
+            self.description = self.makeDescriptionOfBuyingPuzzle(data[0].replace("_"," "),data[1], data[2].replace(".svg",""))
+            self.say()
+
+            for pos in range(0,numItems):
+                pic = QtSvg.QSvgWidget(pic, self)
+                sizeOfItem = width/10
+                if (pos+1)*sizeOfItem >= width:
+                    posx = x+(pos+1)*sizeOfItem - width
+                    posy = y+sizeOfItem
+                else:
+                    posx = x+pos*sizeOfItem
+                    posy = y
+                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
+                pic.show()
+                self.tempImages.append(pic)
+            time.sleep(1)
+            self.description = self.makeDescription(numItems, relation)
+            self.say()
+
+        def drawCoins(self,pocket_coins,startx,starty,zloty_size,grosz_size):
+
+            posx = startx
+            posy = starty
+            fives = pocket_coins[(5,0)]
+            self.drawCoin(self.resourcesPath + "/piec.svg",posx,posy,zloty_size,fives)
+            posx += fives*zloty_size
+
+            twos = pocket_coins[(2,0)]
+            self.drawCoin(self.resourcesPath + "/dwa.svg",posx,posy,zloty_size,twos)
+            posx += twos*zloty_size
+
+            ones = pocket_coins[(1,0)]
+            self.drawCoin(self.resourcesPath + "/jeden.svg",posx,posy,zloty_size,ones)
+            posx += ones*zloty_size
+
+
+            fives = pocket_coins[(0,50)]
+            self.drawCoin(self.resourcesPath + "/50cents.svg",posx,posy,grosz_size,fives)
+            posx += fives*grosz_size
+
+            twos = pocket_coins[(0,20)]
+            self.drawCoin(self.resourcesPath + "/20cents.svg",posx,posy,grosz_size,twos)
+            posx += twos*grosz_size
+
+            ones = pocket_coins[(0,10)]
+            self.drawCoin(self.resourcesPath + "/10cents.svg",posx,posy,grosz_size,ones)
+            posx += ones*grosz_size
+            return
+
+        def drawCoin(self,image_file,startx,starty,coin_size,amount):
+
+            for i in range(0,amount):
+                pic = QtSvg.QSvgWidget(image_file, self)
+                x = self.x
+                y = self.y
+                width = self.width
+                height = self.height
+                if (i+1)*coin_size >= width:
+                    posx = startx+x+(i+1)*coin_size - width
+                    posy = starty+y+coin_size
+                else:
+                    posx = startx+x+i*coin_size
+                    posy = starty+y
+                pic.setGeometry(posx,posy,coin_size,coin_size)
+                pic.show()
+                self.tempImages.append(pic)
+            return
+
+        def Render(qp):
+            qp.setPen(QtGui.QColor(0,0,100))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(self.sizeOfItem,self.sizeOfItem/2, QtCore.QString(self.price))
+            qp.setPen(QtGui.QColor(0,0,100))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(0,self.sizeOfItem*1.6, QtCore.QString("Pocket money:"))
+            pass
+
+        def makeDescription(self, sumItems, relationText):
+            return "Katie and Stephanie have " + str(sumItems) + " ice creams all together. Stephanie has " + relationText + " Katie has. How many ice creams does Katie have?"
+
+    class MathPuzzleVisualization(Visualization):
+        def __init__(self, tts, a, b, matop):
+
+            self.tts = tts
+
+            #time.sleep(1)
+            self.description = self.makeDescription(a,b,matop)
+            self.say()
+
+        def makeDescription(self,a,b,matop):
+            mapping = {'+' : "plus", '-' : "minus", '*' : "times", '/' : "divided by"} 
+            return "What is "+str(a)+" "+mapping[matop] +" "+str(b)+" ?"
+
     class Choice:
         def __init__(self,choices,resourcesPath,parent, startx, starty, width, height, dry_run, timeToWatch):
             self.candidates = {}
@@ -487,8 +734,6 @@ class Equation(QtGui.QWidget):
         self.tempImages = []
         self.tempMedals = []
         self.lenBaseText = []
-        self.pixmaps = []   # Pixmap to be set on Label
-        self.sizeOfAnimal = self.geometry().height()/3
         self.visualized = False
         self.errorOnPresentTask = False # Flag indicating if was already some mistake in current puzzle
         self.numMistakes = 0;  # Number of mistakes done
@@ -541,210 +786,70 @@ class Equation(QtGui.QWidget):
         qp = QtGui.QPainter()
         qp.begin(self)
         self.drawText(event, qp)
-        if self.iter < len(self.tasks) and self.tasks[self.iter][3] == "?" and self.visualized == False:
-            self.tempImages = []
-            for pos in range(0,self.tasks[self.iter][1]):
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self)
-                x = self.geometry().x()
-                y = self.geometry().y()
-                width = self.geometry().width()
-                height = self.geometry().height()
-                sizeOfBear = width/10
-                if (pos+1)*sizeOfBear >= width:
-                    posx = x+(pos+1)*sizeOfBear - width
-                    posy = y+sizeOfBear
-                else:
-                    posx = x+pos*sizeOfBear
-                    posy = y
-                pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
-                pic.show()
-                self.tempImages.append(pic)
-            self.description = self.makeDescriptionOfBearsPuzzle() 
-            time.sleep(1)
-            self.say(self.description)
-            self.visualized = True
-        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "text" and self.visualized == False:
-            for pos in range(0,self.tasks[self.iter][2]):
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self)
-                x = self.geometry().x()
-                y = self.geometry().y()
-                width = self.geometry().width()
-                height = self.geometry().height()
-                sizeOfItem = width/10
-                if (pos+1)*sizeOfItem >= width:
-                    posx = x+(pos+1)*sizeOfItem - width
-                    posy = y+sizeOfItem
-                else:
-                    posx = x+pos*sizeOfItem
-                    posy = y
-                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
-                pic.show()
-                self.tempImages.append(pic)
-            self.visualized = True
-            time.sleep(1)
-            self.description = self.makeDescriptionOfTextPuzzle(self.tasks[self.iter][2], self.tasks[self.iter][4])
-            self.say(self.description)
-        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "buying":
-            width = self.geometry().width()
-            height = self.geometry().height()
-            sizeOfItem = width/10
+        if self.iter < len(self.tasks):
             if self.visualized == False:
-                answer = self.tasks[self.iter][1]
-                pocket_coins = self.tasks[self.iter][2]
-                item_file = self.tasks[self.iter][4]
-                data = item_file.split('-')
-                pos = 0
-                # TODO: Make various items to be chosen
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/" + item_file, self)
-                x = self.geometry().x()
-                y = self.geometry().y()
-                if (pos+1)*sizeOfItem >= width:
-                    posx = x+(pos+1)*sizeOfItem - width
-                    posy = y+sizeOfItem
-                else:
-                    posx = x+pos*sizeOfItem
-                    posy = y
-                pic.setGeometry(posx,posy,sizeOfItem,sizeOfItem)
-                pic.show()
-                self.tempImages.append(pic)
-                # Presenting pocket money
-                self.drawCoins(pocket_coins,0,sizeOfItem*1.75,sizeOfItem,sizeOfItem*0.75)
-
+                if self.tasks[self.iter][3] == "?":
+                    self.visualizer = BearsPuzzleVisualization(QtSvg.QSvgWidget(self.resourcesPath + "/bear.svg", self), 
+                            self.geometry().x(), 
+                            self.geometry().y(), 
+                            self.geometry().width(), 
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][1]) 
+                elif self.tasks[self.iter][3] == "text": 
+                    self.visualizer = TextPuzzleVisualization(QtSvg.QSvgWidget(self.resourcesPath + "/ice_cream.svg", self), 
+                            self.geometry().x(), 
+                            self.geometry().y(), 
+                            self.geometry().width(), 
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][1],
+                            self.tasks[self.iter][4]) 
+                elif self.tasks[self.iter][3] == "buying": 
+                    self.visualizer = BuyingPuzzleVisualization(QtSvg.QSvgWidget(self.resourcesPath , "/ice_cream.svg", self), 
+                            self.geometry().x(), 
+                            self.geometry().y(), 
+                            self.geometry().width(), 
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][1],
+                            self.tasks[self.iter][2],
+                            self.resourcesPath,
+                            self.tasks[self.iter][4]) 
+                elif self.tasks[self.iter][3] == "clock": 
+                    self.visualizer = ClockPuzzleVisualization(qp, QtSvg.QSvgWidget(self.resourcesPath , "/clock.svg", self), 
+                            self.geometry().x(),
+                            self.geometry().y(),
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][0],
+                            self.tasks[self.iter][4]) 
+                elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang":
+                    self.visualizer = self.LangPuzzleVisualization(QtGui.QLabel(self),
+                            QtGui.QPixmap(self.tasks[self.iter][4]), 
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][0])
+                elif self.iter < len(self.tasks) and (
+                   self.tasks[self.iter][3] == "+" or
+                   self.tasks[self.iter][3] == "/" or
+                   self.tasks[self.iter][3] == "-" or
+                   self.tasks[self.iter][3] == "*"):
+                    self.visualizer = self.MathPuzzleVisualization(self.tts, self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3])
+                elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
+                    self.renderMaze(self.tasks[self.iter][4],event,qp)
+                    # Render the dynamic elements
+                elif self.iter == len(self.tasks):
+                    if hasattr(self,'choice'):
+                        self.choice.render(qp)
                 self.visualized = True
-                time.sleep(1)
-                # TODO: Unit test 
-                self.description = self.makeDescriptionOfBuyingPuzzle(data[0].replace("_"," "),data[1], data[2].replace(".svg",""))
-                self.say(self.description)
-            qp.setPen(QtGui.QColor(0,0,100))
-            qp.setFont(QtGui.QFont('Decorative',50))
-            qp.drawText(sizeOfItem,sizeOfItem/2, QtCore.QString(self.price))
-            qp.setPen(QtGui.QColor(0,0,100))
-            qp.setFont(QtGui.QFont('Decorative',50))
-            qp.drawText(0,sizeOfItem*1.6, QtCore.QString("Pocket money:"))
+            else:
+                self.visualizer.Render(qp)
 
-        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang" and self.visualized == False:
-            # TODO: put this in the middle
-            self.pixmaps[0] = self.pixmaps[0].scaledToWidth(self.sizeOfAnimal)
-            self.hideImages(self.tempImages)
-            self.tempImages = []
-            pic = QtGui.QLabel(self)
-            startx = self.geometry().width()/2 - self.sizeOfAnimal/2
-            starty = 0
-            pic.setGeometry(startx,starty,self.sizeOfAnimal,self.sizeOfAnimal)
-            pic.setPixmap(self.pixmaps[0])
-            pic.show()
-            self.tempImages.append(pic)
-            self.visualized = True
-            time.sleep(1)
-            self.description = self.makeDescriptionOfLangPuzzle(self.tasks[self.iter][0])
-            self.say(self.description)
-        elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "clock" :
-            # TODO: put this in the middle
-            #self.hideImages(self.tempImages) ?????
-            sizeOfClock = self.geometry().width()/5
-            if self.visualized == False:
-                self.tempImages = []
-
-                pic = QtSvg.QSvgWidget(self.resourcesPath + "/clock.svg", self)
-                x = self.geometry().x()
-                y = self.geometry().y()
-                width = self.geometry().width()
-                height = self.geometry().height()
-                posx = self.geometry().width()/2 - sizeOfClock/2
-                posy = 0
-                pic.setGeometry(posx,posy,sizeOfClock,sizeOfClock)
-                self.tempImages.append(pic)
-                self.visualized = True
-                time.sleep(1)
-                self.description = self.makeDescriptionOfClockPuzzle(self.tasks[self.iter][0])
-                self.say(self.description)
-                pic.show()
-            # Get degree of rotation of clock pointer
-            correctAnswer = self.tasks[self.iter][1]
-            # remove answer enumeration and leave only hour
-            degrees = correctAnswer * 360/12 
-            # Big pointer
-            midx = self.geometry().width()/2
-            midy = sizeOfClock*0.42
-            qp.setPen(QtGui.QPen(QtCore.Qt.black, 10, QtCore.Qt.SolidLine))
-            qp.drawLine(midx,midy,midx,0 + sizeOfClock*0.2 )
-            # small pointer
-            qp.setPen(QtGui.QPen(QtCore.Qt.black, 13, QtCore.Qt.SolidLine))
-            qp.translate(midx,midy)
-            qp.rotate(degrees)
-            qp.drawLine(0,0,0 , 0 - sizeOfClock*0.15)
-        elif self.iter < len(self.tasks) and (
-           self.tasks[self.iter][3] == "+" or
-           self.tasks[self.iter][3] == "/" or
-           self.tasks[self.iter][3] == "-" or
-           self.tasks[self.iter][3] == "*"):
-
-           if self.visualized == False:
-                self.visualized = True
-                time.sleep(1)
-                self.description = self.makeDescriptionOfMathPuzzle(self.tasks[self.iter][1],self.tasks[self.iter][2],self.tasks[self.iter][3])
-                self.say(self.description)
-
-        elif self.iter < len(self.tasks) and self.tasks[self.iter][3] == "maze":
-            self.renderMaze(self.tasks[self.iter][4],event,qp)
-            # Render the dynamic elements
-        elif self.iter == len(self.tasks):
-            if hasattr(self,'choice'):
-                self.choice.render(qp)
-            self.visualized = True
-            #
         qp.end()
         self.update()
-    
-    def drawCoin(self,image_file,startx,starty,coin_size,amount):
-
-        for i in range(0,amount):
-            pic = QtSvg.QSvgWidget(image_file, self)
-            x = self.geometry().x()
-            y = self.geometry().y()
-            width = self.geometry().width()
-            height = self.geometry().height()
-            if (i+1)*coin_size >= width:
-                posx = startx+x+(i+1)*coin_size - width
-                posy = starty+y+coin_size
-            else:
-                posx = startx+x+i*coin_size
-                posy = starty+y
-            pic.setGeometry(posx,posy,coin_size,coin_size)
-            pic.show()
-            self.tempImages.append(pic)
-        return
-
-
-    def drawCoins(self,pocket_coins,startx,starty,zloty_size,grosz_size):
-
-        posx = startx
-        posy = starty
-        fives = pocket_coins[(5,0)]
-        self.drawCoin(self.resourcesPath + "/piec.svg",posx,posy,zloty_size,fives)
-        posx += fives*zloty_size
-
-        twos = pocket_coins[(2,0)]
-        self.drawCoin(self.resourcesPath + "/dwa.svg",posx,posy,zloty_size,twos)
-        posx += twos*zloty_size
-
-        ones = pocket_coins[(1,0)]
-        self.drawCoin(self.resourcesPath + "/jeden.svg",posx,posy,zloty_size,ones)
-        posx += ones*zloty_size
-
-
-        fives = pocket_coins[(0,50)]
-        self.drawCoin(self.resourcesPath + "/50cents.svg",posx,posy,grosz_size,fives)
-        posx += fives*grosz_size
-
-        twos = pocket_coins[(0,20)]
-        self.drawCoin(self.resourcesPath + "/20cents.svg",posx,posy,grosz_size,twos)
-        posx += twos*grosz_size
-
-        ones = pocket_coins[(0,10)]
-        self.drawCoin(self.resourcesPath + "/10cents.svg",posx,posy,grosz_size,ones)
-        posx += ones*grosz_size
-        return
 
     def renderMaze(self,maze, event, qp):
         """ Draw actual labirynth based on parameter named maze"""
@@ -839,8 +944,7 @@ class Equation(QtGui.QWidget):
             equation_string="? ="
         elif matop == "lang":
             badAnswers = ["",""]
-            picture, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
-            self.pixmaps.append(picture)
+            data, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
             # TODO Remeber which answer is proper one        
             a = random.randint(1,3)
             b = self.addPrefix(goodAnswer)
@@ -940,7 +1044,7 @@ class Equation(QtGui.QWidget):
                     }
         if(e.isAutoRepeat() != True):
             if e.key() == QtCore.Qt.Key_R:
-                self.say(self.description)
+                self.visualizer.say()
             elif((e.key() == QtCore.Qt.Key_Backspace) and (len(self.tasks[self.iter][0]) > self.lenBaseText[self.iter])):
                self.tasks[self.iter] = (self.tasks[self.iter][0][:-1], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
             elif((e.key() in key2str) and (len(self.tasks[self.iter][0]) < self.lenBaseText[self.iter] + 3)): # No more than three characters
@@ -950,7 +1054,7 @@ class Equation(QtGui.QWidget):
                 if(self.validateEquation() == True):
                     self.executeOnSuccess()
                 else:
-                    self.say("Wrong!")
+                    self.visualizer.say("Wrong!")
                     self.errorOnPresentTask = True
 
     def executeOnSuccess(self):
@@ -997,7 +1101,7 @@ class Equation(QtGui.QWidget):
                 congrats = ["OK!","Finally!","Approved!"]
             else:
                 congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!","Awesome!"]
-            self.say(random.choice(congrats))
+            self.visualizer.say(random.choice(congrats))
             if self.tasks[self.iter][3] == "lang":
                 time.sleep(1)
                 self.say("This is " + self.tasks[self.iter][2])
@@ -1100,11 +1204,11 @@ class Equation(QtGui.QWidget):
         imagesNames = listdir(imagesDirPath)
         # Get Randomly imagename to be proper answer and its picture
         correctOneName = random.choice(imagesNames)
-        picture = QtGui.QPixmap(imagesDirPath +"/"+ correctOneName)
         # Here is name of animal that corresponds to picture
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctAnimalName)
-        return picture,correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
+        correctPicFileName = imagesDirPath + "/" + correctOneName
+        return correctPicFileName, correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
 
     def computeAnswerAndTotal(self, param_pair, maxValue):
         # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
@@ -1185,27 +1289,14 @@ class Equation(QtGui.QWidget):
         secondBadAnswer = secondBadAnswer.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
         return firstBadAnswer,secondBadAnswer
 
-    def say(self, text):
-        # This is one is for espeak tts
-        #subprocess.Popen(["espeak","-s 150",text])
-        # this one is for festival tts
-        p1 = subprocess.Popen(["echo",text], stdout=subprocess.PIPE)
-        subprocess.Popen(["padsp",self.tts,"--tts"], stdin=p1.stdout)
     def addPrefix(self, text):
         if text[0] =='a' or text[0] =='u' or text[0] =='i' or text[0] =='e' or text[0] =='y' or text[0] =='o':
            return "an " + text 
         else:
             return "a " + text
 
-    def makeDescriptionOfMathPuzzle(self,a,b,matop):
-        mapping = {'+' : "plus", '-' : "minus", '*' : "times", '/' : "divided by"} 
-        return "What is "+str(a)+" "+mapping[matop] +" "+str(b)+" ?"
 
-    def makeDescriptionOfBearsPuzzle(self):
-        return "How many bears You can see?"
 
-    def makeDescriptionOfTextPuzzle(self,sumItems, relationText):
-        return "Katie and Stephanie have " + str(sumItems) + " ice creams all together. Stephanie has " + relationText + " Katie has. How many ice creams does Katie have?"
 
     def makeDescriptionOfBuyingPuzzle(self,item, zlotys, groszys):
         items = item + "s"
@@ -1221,13 +1312,7 @@ class Equation(QtGui.QWidget):
         return "One " + item + " costs " + price +". How many "+items+" can You buy?" 
 
 
-    def makeDescriptionOfLangPuzzle(self,stringToPrint):
-        """ Function that generates message to be uttered when Lang puzzle is presented"""
-        return "What is on the picture? Possible answers: " + stringToPrint.replace("Answer:","") 
 
-    def makeDescriptionOfClockPuzzle(self,stringToPrint):
-        """ Function that generates message to be uttered when Clock puzzle is presented"""
-        return "What time is it?" 
 
     def makeMazeSpeech(self):
         """ Function that generates message to be uttered when Maze puzzle is presented"""
