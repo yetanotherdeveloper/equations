@@ -179,7 +179,7 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangements_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
+                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
                       'maze_size' : 8, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
@@ -199,7 +199,7 @@ class EquationsConfig:
             self.process_arg(configDir,'num_lang_puzzles', args.set_num_lang_puzzles, -1)
             self.process_arg(configDir,'num_text_puzzles', args.set_num_text_puzzles, -1)
             self.process_arg(configDir,'num_buying_puzzles', args.set_num_buying_puzzles, -1)
-            self.process_arg(configDir,'num_arrangements_puzzles', args.set_num_arrangement_puzzles, -1)
+            self.process_arg(configDir,'num_arrangement_puzzles', args.set_num_arrangement_puzzles, -1)
             self.process_arg(configDir,'num_clock_puzzles', args.set_num_clock_puzzles, -1)
             self.process_arg(configDir,'num_mazes', args.set_num_mazes, -1)
             self.process_arg(configDir,'daily_counter', args.set_daily_counter, -1)
@@ -304,6 +304,7 @@ class EquationsConfig:
         self.print_attrib_int('num_mazes')
         self.print_attrib_int('num_text_puzzles')
         self.print_attrib_int('num_buying_puzzles')
+        self.print_attrib_int('num_arrangement_puzzles')
         self.print_attrib_int('daily_counter')
         self.print_attrib_int('maximum_daily_counter')
         self.print_attrib_int('maximum_value')
@@ -487,6 +488,53 @@ class Equation(QtGui.QWidget):
         def cleanup(self):
             for widget in self.tempImages:
                 widget.setHidden(True)
+
+
+    class ArrangementPuzzleVisualization(Visualization):
+        def __init__(self, qparent, sofaName, toyName, x, y, width, height, tts, stringToPrint, numBears):
+
+            self.tts = tts
+            self.tempImages = []
+            self.stringToPrint = stringToPrint
+
+            self.sofa = QtSvg.QSvgWidget(sofaName, qparent)
+            self.sofa.setGeometry(0,0,width,height/2)
+            self.sofa.show()
+
+            for pos in range(0,numBears):
+                pic = QtSvg.QSvgWidget(toyName, qparent)
+                sizeOfBear = width/10
+                posx = x+(-numBears/2 + pos)*sizeOfBear + width/2
+                posy = y + 2*height/7 - sizeOfBear
+                pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
+                effect = QtGui.QGraphicsColorizeEffect(qparent)
+                effect.setColor(QtGui.QColor(50,200*(pos%2),50*(pos%5)))
+                pic.setGraphicsEffect(effect)
+                pic.show()
+                self.tempImages.append(pic)
+            self.description = self.makeDescription(numBears)
+            time.sleep(1)
+            self.say()
+            pass
+
+        def makeDescription(self, numBears):
+            phrase = ""
+            if numBears == 1:
+                phrase = "one bear "
+            else:
+                phrase = str(numBears)+" bears "
+            return "How many ways You can sit "+phrase+"on the sofa?"
+
+        def cleanup(self):
+            self.sofa.setHidden(True)
+            for widget in self.tempImages:
+                widget.setHidden(True)
+
+        def Render(self, qp, rect):
+            qp.setPen(QtGui.QColor(0,0,255))
+            qp.setFont(QtGui.QFont('Decorative',150))
+            qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
+            pass
 
     class ClockPuzzleVisualization(Visualization):
         def __init__(self, qp, pic, x, y, width, height, tts, stringToPrint, correctTime):
@@ -786,7 +834,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, num_arrangements_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
+                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
                              tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
@@ -817,7 +865,10 @@ class Equation(QtGui.QWidget):
                 operations.append('*')
             for i in range(0,num_divs):
                 operations.append('/')
-
+        # Add arrangements puzzles
+        if maximum_arrangement_size > 0:
+            for i in range(0,num_arrangement_puzzles):
+                operations.append('arrangement')
         # Add num_clock_puzzles param
         for i in range(0,num_clock_puzzles):
             operations.append('clock')
@@ -840,6 +891,8 @@ class Equation(QtGui.QWidget):
             operations.remove(operation)
             if operation == "maze":
                 self.tasks.append(self.makeRandomEquation(operation,maze_size))
+            elif operation == "arrangement":
+                self.tasks.append(self.makeRandomEquation(operation,maximum_arrangement_size))
             else:
                 self.tasks.append(self.makeRandomEquation(operation,maximum_value))
             self.lenBaseText.append(len(self.tasks[len(self.tasks)-1][0]))   # length of basic equation (this should be preserved)
@@ -863,6 +916,16 @@ class Equation(QtGui.QWidget):
                             self.geometry().height(),
                             self.tts,
                             self.tasks[self.iter][1]) 
+                elif self.tasks[self.iter][3] == "arrangement": 
+                    self.visualizer = self.ArrangementPuzzleVisualization(self, self.resourcesPath + "/sofa.svg",
+                            self.resourcesPath + "/bear.svg",
+                            self.geometry().x(), 
+                            self.geometry().y(), 
+                            self.geometry().width(), 
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][0],
+                            self.tasks[self.iter][1])
                 elif self.tasks[self.iter][3] == "text": 
                     self.visualizer = self.TextPuzzleVisualization(self, self.resourcesPath + "/ice_cream.svg", 
                             self.geometry().x(), 
@@ -1006,6 +1069,12 @@ class Equation(QtGui.QWidget):
             a = random.randint(1,matMaxValue)
             b = random.randint(0,0)
             equation_string="? ="
+        elif matop == "arrangement":
+            a = random.randint(1,matMaxValue)
+            b = 1
+            for i in range(1,a+1):
+                b *= i
+            equation_string = str(a)+"!="
         elif matop == "lang":
             badAnswers = ["",""]
             data, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
@@ -1240,7 +1309,6 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "?":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
-            #print("computed=%d typed=%d\n" %(computed_result,typed_result))
         elif self.tasks[self.iter][3] == "lang":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
@@ -1250,6 +1318,9 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "buying":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "arrangement":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][2]
         elif self.tasks[self.iter][3] == "clock":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
@@ -1421,7 +1492,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_mazes'),
                             config.isEnabled('num_text_puzzles'),
                             config.isEnabled('num_buying_puzzles'),
-                            config.isEnabled('num_arrangements_puzzles'),
+                            config.isEnabled('num_arrangement_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
                             config.getMaximumBears(),       
