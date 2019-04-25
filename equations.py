@@ -249,16 +249,16 @@ class EquationsConfig:
                 self.terminate = True;
                 return;
 
-            
-            if self.data['day'] != datetime.datetime.now().day:
-                self.data['day'] = datetime.datetime.now().day
-                self.data['daily_counter'] = 1
-                self.run = True
-            elif self.data['daily_counter'] < self.data['maximum_daily_counter']:
-                self.data['daily_counter'] = self.data['daily_counter'] + 1
-                self.run = True
-            else:
-                self.run = False
+            if self.terminate == False:
+                if self.data['day'] != datetime.datetime.now().day:
+                    self.data['day'] = datetime.datetime.now().day
+                    self.data['daily_counter'] = 1
+                    self.run = True
+                elif self.data['daily_counter'] < self.data['maximum_daily_counter']:
+                    self.data['daily_counter'] = self.data['daily_counter'] + 1
+                    self.run = True
+                else:
+                    self.run = False
         else:
             if args.print_config == True:
                 print("\n No Config found!\n");
