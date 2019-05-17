@@ -179,7 +179,7 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                      'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
+                'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1,'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
                       'maze_size' : 8, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
@@ -198,6 +198,7 @@ class EquationsConfig:
             self.process_arg(configDir,'num_divs', args.set_num_divs, -1)
             self.process_arg(configDir,'num_lang_puzzles', args.set_num_lang_puzzles, -1)
             self.process_arg(configDir,'num_text_puzzles', args.set_num_text_puzzles, -1)
+            self.process_arg(configDir,'num_snail_puzzles', args.set_num_snail_puzzles, -1)
             self.process_arg(configDir,'num_buying_puzzles', args.set_num_buying_puzzles, -1)
             self.process_arg(configDir,'num_arrangement_puzzles', args.set_num_arrangement_puzzles, -1)
             self.process_arg(configDir,'num_clock_puzzles', args.set_num_clock_puzzles, -1)
@@ -305,6 +306,7 @@ class EquationsConfig:
         self.print_attrib_int('num_text_puzzles')
         self.print_attrib_int('num_buying_puzzles')
         self.print_attrib_int('num_arrangement_puzzles')
+        self.print_attrib_int('num_snail_puzzles')
         self.print_attrib_int('daily_counter')
         self.print_attrib_int('maximum_daily_counter')
         self.print_attrib_int('maximum_value')
@@ -586,6 +588,61 @@ class Equation(QtGui.QWidget):
         def cleanup(self):
             self.pic.setHidden(True)
 
+    class SnailPuzzleVisualization(Visualization):
+        def __init__(self, qparent, raceFileName, animalFileName, animalName, animalSpeed, x, y, width, height, tts, stringToPrint, distance):
+
+            self.tts = tts
+            self.sizeOfClock = width/5
+            self.tempImages = []
+
+            # Load Animal picture
+            # Get Animal name for utterance
+            self.animalName = animalName
+            # Get speed of animal
+            self.animalSpeed = animalSpeed 
+            self.distance = str(distance)  
+
+            self.race = QtSvg.QSvgWidget(raceFileName, qparent)
+            self.race.setGeometry(0,0,width,height/2.5)
+            self.race.show()
+
+            posx = 0
+            posy = 0
+            pic = QtSvg.QSvgWidget(animalFileName, qparent)
+            pic.setGeometry(posx,posy,self.sizeOfClock,self.sizeOfClock)
+            time.sleep(1)
+            self.description = self.makeDescription(stringToPrint)
+            self.stringToPrint = stringToPrint
+            self.say()
+            pic.show()
+            self.pic = pic
+
+
+
+        def makeDescription(self,stringToPrint):
+            """ Function that generates message to be uttered when Clock puzzle is presented"""
+            speed = self.animalSpeed 
+            if speed == "one" or speed == "1":
+                speed += " meter"
+            else:
+                speed += " meters"
+
+            total_distance = self.distance
+            if total_distance == "one" or total_distance == "1":
+                total_distance += " meter"
+            else:
+                total_distance += " meters"
+
+            return "A "+self.animalName + "can travel " + speed +" per minute. How many minutes does the "+self.animalName+ " need to travel " +total_distance +" ?" 
+
+        def Render(self,qp, rect):
+            qp.setPen(QtGui.QColor(0,0,255))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
+
+        def cleanup(self):
+            self.pic.setHidden(True)
+            self.race.setHidden(True)
 
     class TextPuzzleVisualization(Visualization):
         def __init__(self, qparent, picName, x, y, width, height, tts, stringToPrint, kasiaItems, numItems, relation):
@@ -834,7 +891,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
+                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
                              tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
@@ -878,6 +935,8 @@ class Equation(QtGui.QWidget):
         # Add num_text_puzzles param
         for i in range(0,num_text_puzzles):
             operations.append('text')
+        for i in range(0,num_snail_puzzles):
+            operations.append('snail')
         # Add num_buying_puzzles param
         for i in range(0,num_buying_puzzles):
             operations.append('buying')
@@ -958,6 +1017,18 @@ class Equation(QtGui.QWidget):
                             self.tts,
                             self.tasks[self.iter][0],
                             self.tasks[self.iter][1]) 
+                elif self.tasks[self.iter][3] == "snail": 
+                    self.visualizer = self.SnailPuzzleVisualization( self, self.resourcesPath + "/" + "race.svg", 
+                            self.resourcesPath + "/" + self.tasks[self.iter][4],
+                            (self.tasks[self.iter][4])[0:self.tasks[self.iter][4].find('-')],
+                            (self.tasks[self.iter][4])[self.tasks[self.iter][4].find('-')+1:].replace(".svg",""), 
+                            self.geometry().x(),
+                            self.geometry().y(),
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][0], 
+                            self.tasks[self.iter][2]) 
                 elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang":
                     self.visualizer = self.LangPuzzleVisualization(QtGui.QLabel(self),
                             QtGui.QPixmap(self.tasks[self.iter][4]), 
@@ -1093,6 +1164,9 @@ class Equation(QtGui.QWidget):
         elif matop == "text":
             data, a, b = self.prepareTextPuzzle(matMaxValue)  
             equation_string = "\nAmount of Katie ice creams =  " 
+        elif matop == "snail":
+            data, a, b = self.prepareSnailPuzzle(matMaxValue)  
+            equation_string = "\nAnswer =  " 
         elif matop == "buying":
             data, a, b = self.prepareBuyingPuzzle()  
             # TODO: Replace Items with what is to be actually sold
@@ -1315,6 +1389,9 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "text":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "snail":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "buying":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
@@ -1361,6 +1438,13 @@ class Equation(QtGui.QWidget):
             kasia_items = (stephane_items - param_pair[1])/param_pair[0]
         sum_items = int(kasia_items + kasia_items*param_pair[0] + param_pair[1])
         return kasia_items, sum_items
+
+    def prepareSnailPuzzle(self, maxValue):
+        runners = ["snail-1.svg","snake-2.svg"]
+        participant = random.choice(runners)
+        speed = int(participant.replace(".svg","")[participant.find('-')+1:]) 
+        k = random.randint(speed,int(maxValue/speed))
+        return participant, k, k*speed 
 
     def prepareTextPuzzle(self, maxValue):
         """Generate Text puzzle and return in a form of: relation(text), correct answer, total number of items"""
@@ -1467,6 +1551,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
+    parser.add_argument("--set_num_snail_puzzles", help="Number of Snail riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
     parser.add_argument("--set_num_arrangement_puzzles", help="Number of Arrangements riddles", type=int, default=-1)
     parser.add_argument("--tts", help="<command to festival>", type=str, default="")
@@ -1493,6 +1578,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_text_puzzles'),
                             config.isEnabled('num_buying_puzzles'),
                             config.isEnabled('num_arrangement_puzzles'),
+                            config.isEnabled('num_snail_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
                             config.getMaximumBears(),       
