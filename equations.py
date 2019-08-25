@@ -214,7 +214,7 @@ class EquationsConfig:
             self.process_arg(configDir,'maximum_bears', args.set_maximum_bears, -1)
 
             if 'tts' not in self.data:
-                self.data['tts'] = festival
+                self.data['tts'] = "festival"
 
             if args.tts <> "":
                 self.data['tts'] = args.tts
@@ -739,7 +739,6 @@ class Equation(QtGui.QWidget):
             self.margin = 1.1
             self.chosenx = -1
             self.choseny = -1
-            self.description = "Can you solve memory puzzle?"
 
             self.timer = threading.Timer(0.5, self.hideCards)
             self.timer.cancel()
@@ -763,6 +762,9 @@ class Equation(QtGui.QWidget):
                 if col == self.cols:
                     col = 0
                     row += 1
+
+            self.description = "Can you solve memory puzzle?"
+            self.say()
 
         def solved(self):
             solved = True
