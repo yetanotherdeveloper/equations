@@ -755,7 +755,7 @@ class Equation(QtGui.QWidget):
 
         def solved(self):
             solved = True
-            for card in self.cards:
+            for card in self.cards.values():
                 solved = solved and card.revealed
             return solved
 
@@ -817,7 +817,6 @@ class Equation(QtGui.QWidget):
                             self.timer = threading.Timer(0.5, self.hideCards)
                             self.timer.start()
                         else:
-                            # Check if all is solved
                             self.chosenx = -1
                             self.choseny = -1
                     
@@ -825,7 +824,7 @@ class Equation(QtGui.QWidget):
             #    self.makeMazeSpeech()
 
         def cleanup(self):
-            for card in self.cards:
+            for card in self.cards.values():
                 card.cleanup()
 
     class BuyingPuzzleVisualization(Visualization):
@@ -1376,6 +1375,8 @@ class Equation(QtGui.QWidget):
             return
         if(e.isAutoRepeat() != True):
             self.visualizer.updateState(e)
+        if(self.visualizer.solved() == True):
+            self.executeOnSuccess()
         return
 
 
@@ -1417,6 +1418,8 @@ class Equation(QtGui.QWidget):
             return
         if self.tasks[self.iter][3] == "maze":
             return
+        if self.tasks[self.iter][3] == "memory":
+            return
         key2str = {
                    QtCore.Qt.Key_0 : "0",
                    QtCore.Qt.Key_1 : "1",
@@ -1447,69 +1450,67 @@ class Equation(QtGui.QWidget):
                     self.errorOnPresentTask = True
 
     def executeOnSuccess(self):
-        if(self.validateEquation() == True):
+        # If error was made in this answer (at some point)
+        # then no medal is given
+        if self.errorOnPresentTask == True:
+            self.numMistakes += 1
 
-            # If error was made in this answer (at some point)
-            # then no medal is given
-            if self.errorOnPresentTask == True:
-                self.numMistakes += 1
+        # Calculate number of group medals and single medals
+        num_medals = self.iter + 1 - self.numMistakes; 
+        num_groups_medals = num_medals/5
+        num_medals = num_medals - num_groups_medals*5 
+        x = self.geometry().x()
+        y = self.geometry().y()
+        width = self.geometry().width()
+        height = self.geometry().height()
+        sizeOfMedal = height/5
+        # Put medals starting from bottom left
+        group_idx = num_groups_medals
+        idx = 0
+        self.hideImages(self.tempMedals)
+        self.tempMedals = []
+        while num_groups_medals > 0:
+            self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medals.svg", self))
+            self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
+            self.tempMedals[-1].show()
+            idx = idx + 1
+            num_groups_medals = num_groups_medals -1
 
-            # Calculate number of group medals and single medals
-            num_medals = self.iter + 1 - self.numMistakes; 
-            num_groups_medals = num_medals/5
-            num_medals = num_medals - num_groups_medals*5 
-            x = self.geometry().x()
-            y = self.geometry().y()
-            width = self.geometry().width()
-            height = self.geometry().height()
-            sizeOfMedal = height/5
-            # Put medals starting from bottom left
-            group_idx = num_groups_medals
-            idx = 0
-            self.hideImages(self.tempMedals)
-            self.tempMedals = []
-            while num_groups_medals > 0:
-                self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medals.svg", self))
-                self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
-                self.tempMedals[-1].show()
-                idx = idx + 1
-                num_groups_medals = num_groups_medals -1
+        while num_medals > 0:
+            self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medal.svg", self))
+            self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
+            self.tempMedals[-1].show()
+            idx = idx + 1
+            num_medals = num_medals - 1
 
-            while num_medals > 0:
-                self.tempMedals.append(QtSvg.QSvgWidget(self.resourcesPath + "/medal.svg", self))
-                self.tempMedals[-1].setGeometry(x+idx*sizeOfMedal,y + height - sizeOfMedal,sizeOfMedal,sizeOfMedal)
-                self.tempMedals[-1].show()
-                idx = idx + 1
-                num_medals = num_medals - 1
-
-            self.update()
-            # If there was an error in present puzzle then be less optimistic on
-            # in congratualtions
-            if self.errorOnPresentTask == True:
-                congrats = ["OK!","Finally!","Approved!"]
-            else:
-                congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!","Awesome!"]
-            if self.tasks[self.iter][3] == "maze":
-                self.tasks[self.iter][4].say(random.choice(congrats))
-            else:
-                self.visualizer.say(random.choice(congrats))
-                self.visualizer.cleanup()
-            self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
-            if self.tasks[self.iter][3] == "lang":
-                time.sleep(1)
-                self.visualizer.say("This is " + self.tasks[self.iter][2])
-                time.sleep(1)
-            if self.tasks[self.iter][3] == "clock":
-                time.sleep(1)
-                self.visualizer.say("It is " + str(self.tasks[self.iter][1]) + " o'clock")
+        self.update()
+        # If there was an error in present puzzle then be less optimistic on
+        # in congratualtions
+        if self.errorOnPresentTask == True:
+            congrats = ["OK!","Finally!","Approved!"]
+        else:
+            congrats = ["Correct!","Excellent!","Great!","Very good!","Amazing!","Perfect!","Well done!","Awesome!"]
+        if self.tasks[self.iter][3] == "maze":
+            self.tasks[self.iter][4].say(random.choice(congrats))
+        else:
+            self.visualizer.say(random.choice(congrats))
+            self.visualizer.cleanup()
+        self.tasks[self.iter] = ( "", self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
+        if self.tasks[self.iter][3] == "lang":
             time.sleep(1)
-            self.iter+=1
-            self.description = ""  # Reset description of puzzle
-            self.hideImages(self.tempImages)
-            self.visualized = False
-            self.errorOnPresentTask = False
-            if self.iter == len(self.tasks):
-                self.prepareChoice()
+            self.visualizer.say("This is " + self.tasks[self.iter][2])
+            time.sleep(1)
+        if self.tasks[self.iter][3] == "clock":
+            time.sleep(1)
+            self.visualizer.say("It is " + str(self.tasks[self.iter][1]) + " o'clock")
+        time.sleep(1)
+        self.iter+=1
+        self.description = ""  # Reset description of puzzle
+        self.hideImages(self.tempImages)
+        self.visualized = False
+        self.errorOnPresentTask = False
+        if self.iter == len(self.tasks):
+            self.prepareChoice()
         return
 
     def hideImages(self,widgets):
@@ -1754,10 +1755,6 @@ if __name__ == "__main__":
 
     if config.shouldTerminate() == True:
         exit()
-
-
-    #timer = threading.Timer(10, hello)
-
 
     app = QtGui.QApplication(sys.argv)
     if config.shouldRun() == True:
