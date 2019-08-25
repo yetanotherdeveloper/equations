@@ -209,7 +209,7 @@ class EquationsConfig:
             self.process_arg(configDir,'maximum_daily_counter', args.set_maximum_daily_counter, 0)
             self.process_arg(configDir,'maximum_value', args.set_maximum_value, -1)
             self.process_arg(configDir,'maze_size', args.set_maze_size, -1)
-            self.process_arg(configDir,'memory_size', args.set_maze_size, -1)
+            self.process_arg(configDir,'memory_size', args.set_memory_size, -1)
             self.process_arg(configDir,'maximum_arrangement_size', args.set_maximum_arrangement_size, -1)
             self.process_arg(configDir,'maximum_bears', args.set_maximum_bears, -1)
 
@@ -720,6 +720,14 @@ class Equation(QtGui.QWidget):
                 self.pic.setHidden(True)
                 self.back.setHidden(True)
 
+        def getMaxDivisor(self,n):
+            divisor = n
+            for i in range(n/2,1,-1):
+                if n % i == 0:
+                    divisor = i
+                    break
+            return divisor
+
         def __init__(self, qparent, imagesDir, imagesFiles, x, y, width, height, tts ):
             self.tts = tts
             self.x = x 
@@ -731,14 +739,14 @@ class Equation(QtGui.QWidget):
             self.margin = 1.1
             self.chosenx = -1
             self.choseny = -1
+            self.description = "Can you solve memory puzzle?"
 
             self.timer = threading.Timer(0.5, self.hideCards)
             self.timer.cancel()
-            # TODO: Make it multiline, GET NWP
             # Generate 
-            self.rows = 2 
-            self.cols = len(imagesFiles)/2
-            self.cardSize = min(width/10,width/self.cols)
+            self.cols = self.getMaxDivisor(len(imagesFiles)/2)
+            self.rows = len(imagesFiles)/self.cols
+            self.cardSize = min(width/10,width/self.margin/self.cols)
 
             # Go through list and get two indeces for each of it
             # Then load image and remove from the list
@@ -746,7 +754,10 @@ class Equation(QtGui.QWidget):
             row = 0
             col = 0
             self.cards = {} 
-            for im in imagesFiles:
+
+            while len(imagesFiles) > 0 : 
+                im = random.choice(imagesFiles)
+                imagesFiles.remove(im)
                 self.cards[(col,row)] = self.Card(qparent, imagesDir + "/" + im, imagesDir + "/../../cardback.png", col, row, x, y, self.cardSize, self.margin)      
                 col += 1
                 if col == self.cols:
@@ -801,7 +812,6 @@ class Equation(QtGui.QWidget):
             elif e.key() == QtCore.Qt.Key_Right and self.choicex < self.cols - 1:
                 self.choicex+=1
             elif e.key() == QtCore.Qt.Key_Return:
-                            
                 revealed = self.cards[(self.choicex,self.choicey)].revealed
                 if self.chosenx == -1: 
                     if revealed == False:
@@ -820,8 +830,8 @@ class Equation(QtGui.QWidget):
                             self.chosenx = -1
                             self.choseny = -1
                     
-            #if e.key() == QtCore.Qt.Key_R:
-            #    self.makeMazeSpeech()
+            if e.key() == QtCore.Qt.Key_R:
+                self.say()
 
         def cleanup(self):
             for card in self.cards.values():
