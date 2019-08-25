@@ -14,6 +14,7 @@ import datetime
 import argparse
 import time
 import math
+import threading
 
 # TODO:
 # config: one time session length, 
@@ -179,8 +180,8 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
-                'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1,'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
-                      'maze_size' : 8, 'content' : {}, 'tts' : "festival"}
+                'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1, 'num_memory_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
+                'maze_size' : 8, 'memory_size' : 4, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
         # if data is obsolete then reinstantate date and zero the counter of daily watching
@@ -199,6 +200,7 @@ class EquationsConfig:
             self.process_arg(configDir,'num_lang_puzzles', args.set_num_lang_puzzles, -1)
             self.process_arg(configDir,'num_text_puzzles', args.set_num_text_puzzles, -1)
             self.process_arg(configDir,'num_snail_puzzles', args.set_num_snail_puzzles, -1)
+            self.process_arg(configDir,'num_memory_puzzles', args.set_num_memory_puzzles, -1)
             self.process_arg(configDir,'num_buying_puzzles', args.set_num_buying_puzzles, -1)
             self.process_arg(configDir,'num_arrangement_puzzles', args.set_num_arrangement_puzzles, -1)
             self.process_arg(configDir,'num_clock_puzzles', args.set_num_clock_puzzles, -1)
@@ -207,6 +209,7 @@ class EquationsConfig:
             self.process_arg(configDir,'maximum_daily_counter', args.set_maximum_daily_counter, 0)
             self.process_arg(configDir,'maximum_value', args.set_maximum_value, -1)
             self.process_arg(configDir,'maze_size', args.set_maze_size, -1)
+            self.process_arg(configDir,'memory_size', args.set_maze_size, -1)
             self.process_arg(configDir,'maximum_arrangement_size', args.set_maximum_arrangement_size, -1)
             self.process_arg(configDir,'maximum_bears', args.set_maximum_bears, -1)
 
@@ -307,10 +310,12 @@ class EquationsConfig:
         self.print_attrib_int('num_buying_puzzles')
         self.print_attrib_int('num_arrangement_puzzles')
         self.print_attrib_int('num_snail_puzzles')
+        self.print_attrib_int('num_memory_puzzles')
         self.print_attrib_int('daily_counter')
         self.print_attrib_int('maximum_daily_counter')
         self.print_attrib_int('maximum_value')
         self.print_attrib_int('maze_size')
+        self.print_attrib_int('memory_size')
         self.print_attrib_int('maximum_bears')
         self.print_attrib_int('maximum_arrangement_size')
         self.print_attrib_str('tts')
@@ -362,6 +367,9 @@ class EquationsConfig:
 
     def getMazeSize(self):
         return self.data['maze_size']
+
+    def getMemorySize(self):
+        return self.data['memory_size']
 
     def getMaximumBears(self):
         return self.data['maximum_bears']
@@ -425,6 +433,8 @@ class Equation(QtGui.QWidget):
         def setStringToPrint(self,stringToPrint):
             self.stringToPrint = stringToPrint 
 
+        def solved(self):
+            pass
 
         def cleanup(self):
             pass
@@ -437,7 +447,7 @@ class Equation(QtGui.QWidget):
             self.label = label
             self.stringToPrint = stringToPrint
             self.sizeOfAnimal = height/4
-            pixmap = pic.scaledToWidth(self.sizeOfAnimal)
+            pixmap = pic.scaled(self.sizeOfAnimal,self.sizeOfAnimal)
             self.tempImages = []
             startx = width/2 - self.sizeOfAnimal/2
             starty = 0
@@ -678,6 +688,145 @@ class Equation(QtGui.QWidget):
             for widget in self.tempImages:
                 widget.setHidden(True)
 
+    class MemoryPuzzleVisualization(Visualization):
+        class Card:
+            def __init__(self, qparent, imageFile, cardBackFile, col, row, x, y, cardSize, margin ):
+                self.revealed = False
+                self.imageFile = imageFile
+                image = QtGui.QPixmap(imageFile) 
+                im = image.scaled(cardSize,cardSize)
+                self.pic = QtGui.QLabel(qparent)
+                self.stepx = cardSize*margin
+                self.stepy = cardSize*margin
+                x += (margin - 1)/2*cardSize
+                y += (margin - 1)/2*cardSize
+                self.pic.setGeometry(x + col*self.stepx,y + row*self.stepy, cardSize, cardSize)
+                self.pic.setPixmap(im)
+                backIm = QtGui.QPixmap(cardBackFile)
+                backCard = backIm.scaled(cardSize,cardSize)
+                self.back = QtGui.QLabel(qparent)
+                self.back.setGeometry(x  + col*self.stepx,y + row*self.stepy, cardSize, cardSize)
+                self.back.setPixmap(backCard)
+
+            def show(self):
+                if self.revealed == True:
+                    self.back.setHidden(True)
+                    self.pic.show()
+                else:
+                    self.pic.setHidden(True)
+                    self.back.show()
+
+            def cleanup(self):
+                self.pic.setHidden(True)
+                self.back.setHidden(True)
+
+        def __init__(self, qparent, imagesDir, imagesFiles, x, y, width, height, tts ):
+            self.tts = tts
+            self.x = x 
+            self.y = y
+            self.width = width
+            self.height = height
+            self.choicex = 0
+            self.choicey = 0
+            self.margin = 1.1
+            self.chosenx = -1
+            self.choseny = -1
+
+            self.timer = threading.Timer(0.5, self.hideCards)
+            self.timer.cancel()
+            # TODO: Make it multiline, GET NWP
+            # Generate 
+            self.rows = 2 
+            self.cols = len(imagesFiles)/2
+            self.cardSize = min(width/10,width/self.cols)
+
+            # Go through list and get two indeces for each of it
+            # Then load image and remove from the list
+            # make it open or closed state
+            row = 0
+            col = 0
+            self.cards = {} 
+            for im in imagesFiles:
+                self.cards[(col,row)] = self.Card(qparent, imagesDir + "/" + im, imagesDir + "/../../cardback.png", col, row, x, y, self.cardSize, self.margin)      
+                col += 1
+                if col == self.cols:
+                    col = 0
+                    row += 1
+
+        def solved(self):
+            solved = True
+            for card in self.cards:
+                solved = solved and card.revealed
+            return solved
+
+
+        def hideCards(self):
+            self.cards[(self.choicex,self.choicey)].revealed = False
+            self.cards[(self.chosenx,self.choseny)].revealed = False
+            self.chosenx = -1
+            self.choseny = -1
+
+
+        def Render(self,qp, rect):
+            for card in self.cards.values():
+                card.show()
+            # Draw rectangle around chosen card
+            if self.chosenx <> -1:
+                self.drawRectangle(qp, self.chosenx, self.choseny, QtCore.Qt.green)
+            self.drawRectangle(qp, self.choicex, self.choicey, QtCore.Qt.blue)
+
+        def drawRectangle(self, qp, col, row, color):
+            # Draw rectangule of choice
+            offsetx = self.cardSize*self.margin*col
+            offsety = self.cardSize*self.margin*row
+            qp.setPen(QtGui.QPen(color, 10, QtCore.Qt.SolidLine))
+            # top horizontal
+            qp.drawLine(self.x + offsetx,self.y + offsety,self.x + offsetx + self.cardSize*self.margin, self.y + offsety)
+            # left vertical
+            qp.drawLine(self.x + offsetx,self.y + offsety,self.x + offsetx, self.y + offsety + self.cardSize*self.margin)
+            # bottom horizontal 
+            qp.drawLine(self.x + offsetx,self.y + offsety + self.cardSize*self.margin,self.x + offsetx + self.cardSize*self.margin, self.y + offsety + self.cardSize*self.margin)
+            # right vertical
+            qp.drawLine(self.x + offsetx + self.cardSize*self.margin, self.y + offsety, self.x + offsetx + self.cardSize*self.margin, self.y + offsety + self.cardSize*self.margin)
+
+        def updateState(self,e):
+            if self.timer.isAlive():
+                return
+            if e.key() == QtCore.Qt.Key_Up and self.choicey > 0:
+                self.choicey-=1
+            elif e.key() == QtCore.Qt.Key_Down and self.choicey < self.rows - 1:
+                self.choicey+=1
+            elif e.key() == QtCore.Qt.Key_Left and self.choicex > 0 : 
+                self.choicex-=1
+            elif e.key() == QtCore.Qt.Key_Right and self.choicex < self.cols - 1:
+                self.choicex+=1
+            elif e.key() == QtCore.Qt.Key_Return:
+                            
+                revealed = self.cards[(self.choicex,self.choicey)].revealed
+                if self.chosenx == -1: 
+                    if revealed == False:
+                        self.cards[(self.choicex,self.choicey)].revealed = True
+                        self.chosenx = self.choicex
+                        self.choseny = self.choicey
+                else:
+                    if revealed == False:
+                        self.cards[(self.choicex,self.choicey)].revealed = True
+                        # If they match then reset state...
+                        if self.cards[(self.choicex,self.choicey)].imageFile != self.cards[(self.chosenx,self.choseny)].imageFile:
+                            # if they do not then leave them open for a split second
+                            self.timer = threading.Timer(0.5, self.hideCards)
+                            self.timer.start()
+                        else:
+                            # Check if all is solved
+                            self.chosenx = -1
+                            self.choseny = -1
+                    
+            #if e.key() == QtCore.Qt.Key_R:
+            #    self.makeMazeSpeech()
+
+        def cleanup(self):
+            for card in self.cards:
+                card.cleanup()
 
     class BuyingPuzzleVisualization(Visualization):
         def __init__(self, qparent, x, y, width, height, tts, stringToPrint, answer, pocket_coins, resourcesPath, item_file):
@@ -891,7 +1040,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, maximum_value, maze_size, maximum_bears, maximum_arrangement_size,
+                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, num_memory_puzzles, maximum_value, maze_size, memory_size, maximum_bears, maximum_arrangement_size,
                              tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
@@ -940,6 +1089,8 @@ class Equation(QtGui.QWidget):
         # Add num_buying_puzzles param
         for i in range(0,num_buying_puzzles):
             operations.append('buying')
+        for i in range(0,num_memory_puzzles):
+            operations.append('memory')
         # Add num_mazes param
         if maze_size > 0:
             for i in range(0,num_mazes):
@@ -950,6 +1101,8 @@ class Equation(QtGui.QWidget):
             operations.remove(operation)
             if operation == "maze":
                 self.tasks.append(self.makeRandomEquation(operation,maze_size))
+            elif operation == "memory":
+                self.tasks.append(self.makeRandomEquation(operation,memory_size))
             elif operation == "arrangement":
                 self.tasks.append(self.makeRandomEquation(operation,maximum_arrangement_size))
             else:
@@ -1029,6 +1182,14 @@ class Equation(QtGui.QWidget):
                             self.tts,
                             self.tasks[self.iter][0], 
                             self.tasks[self.iter][2]) 
+                elif self.tasks[self.iter][3] == "memory": 
+                    self.visualizer = self.MemoryPuzzleVisualization(self, self.resourcesPath + "/data/images/", 
+                            self.tasks[self.iter][4],
+                            self.geometry().x(),
+                            self.geometry().y(),
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts) 
                 elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "lang":
                     self.visualizer = self.LangPuzzleVisualization(QtGui.QLabel(self),
                             QtGui.QPixmap(self.tasks[self.iter][4]), 
@@ -1167,6 +1328,11 @@ class Equation(QtGui.QWidget):
         elif matop == "snail":
             data, a, b = self.prepareSnailPuzzle(matMaxValue)  
             equation_string = "\nAnswer =  " 
+        elif matop == "memory":
+            data = self.prepareMemoryPuzzle(self.images, matMaxValue )  
+            a = len(data)
+            b = 0
+            equation_string = "" 
         elif matop == "buying":
             data, a, b = self.prepareBuyingPuzzle()  
             # TODO: Replace Items with what is to be actually sold
@@ -1190,6 +1356,7 @@ class Equation(QtGui.QWidget):
         self.proceedChoiceKeys(e)
         self.proceedEquationKeys(e)
         self.proceedMazeKeys(e)
+        self.proceedMemoryKeys(e)
         self.update()
 
 
@@ -1200,6 +1367,17 @@ class Equation(QtGui.QWidget):
             if hasattr(self,'choice'):
                 self.choice.processKeys(e)
         return
+
+    def proceedMemoryKeys(self, e):
+        """ Key handling routine for memory puzzles"""
+        if self.iter == len(self.tasks):
+            return
+        if self.tasks[self.iter][3] != "memory" or self.visualized == False:
+            return
+        if(e.isAutoRepeat() != True):
+            self.visualizer.updateState(e)
+        return
+
 
     def proceedMazeKeys(self,e):
         """ Key handling routine for maze puzzles"""
@@ -1406,6 +1584,9 @@ class Equation(QtGui.QWidget):
             # then puzzle of maze is solved eg. knight met princess
             computed_result = self.tasks[self.iter][4].princessPosY*self.tasks[self.iter][4].width + self.tasks[self.iter][4].princessPosX
             typed_result = self.tasks[self.iter][4].knightPosY*self.tasks[self.iter][4].width + self.tasks[self.iter][4].knightPosX
+        elif self.tasks[self.iter][3] == "memory":
+            computed_result = 0
+            typed_result = 1
         # compare typed result with computed result
         if(typed_result == computed_result):
             return True
@@ -1445,6 +1626,13 @@ class Equation(QtGui.QWidget):
         speed = int(participant.replace(".svg","")[participant.find('-')+1:]) 
         k = random.randint(speed,int(maxValue/speed))
         return participant, k, k*speed 
+
+    def prepareMemoryPuzzle(self, imagesDirPath, numImages):
+        imagesNames = listdir(imagesDirPath)
+        # Pick minimum from images available and images requested
+        numImages = min(len(imagesNames) , numImages)
+        unique = random.sample(imagesNames ,numImages)  
+        return unique + unique 
 
     def prepareTextPuzzle(self, maxValue):
         """Generate Text puzzle and return in a form of: relation(text), correct answer, total number of items"""
@@ -1540,6 +1728,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_maximum_value", help="Set maximal_value in operations to configuration file", type=int, default=-1)
     parser.add_argument("--set_maze_size", help="Set maze_size in operations to configuration file", type=int, default=-1)
     parser.add_argument("--set_maximum_bears", help="Set maximum_bears to configuration file", type=int, default=-1)
+    parser.add_argument("--set_memory_size", help="Set size of memory puzzle", type=int, default=-1)
     parser.add_argument("--set_maximum_arrangement_size", help="Maximum value in Arrangements riddles", type=int, default=-1)
     parser.add_argument("--dry_run", help=" Makes program running without shutdown setting and Netflix launching", action="store_true")
     # Number of specific riddles
@@ -1551,6 +1740,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
+    parser.add_argument("--set_num_memory_puzzles", help="Number of memory puzzles", type=int, default=-1)
     parser.add_argument("--set_num_snail_puzzles", help="Number of Snail riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
     parser.add_argument("--set_num_arrangement_puzzles", help="Number of Arrangements riddles", type=int, default=-1)
@@ -1564,6 +1754,10 @@ if __name__ == "__main__":
 
     if config.shouldTerminate() == True:
         exit()
+
+
+    #timer = threading.Timer(10, hello)
+
 
     app = QtGui.QApplication(sys.argv)
     if config.shouldRun() == True:
@@ -1579,8 +1773,10 @@ if __name__ == "__main__":
                             config.isEnabled('num_buying_puzzles'),
                             config.isEnabled('num_arrangement_puzzles'),
                             config.isEnabled('num_snail_puzzles'),
+                            config.isEnabled('num_memory_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
+                            config.getMemorySize(),
                             config.getMaximumBears(),       
                             config.getMaximumArrangementSize(),
                             config.getTTS(),
