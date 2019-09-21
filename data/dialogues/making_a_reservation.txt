@@ -1,0 +1,31 @@
+
+	A: Shogun Restaurant.
+	B: Hi, I would like to make a dinner reservation.
+
+	A: What time would you like the reservation for?
+	B: We would prefer 7:00 or 7:30.
+	A: How many people will you need the reservation for?
+	B: There will be 4 of us.
+
+	A: This is Shogun Restaurant.
+	B: Hello, I need to make a dinner reservation.
+
+	A: Can you tell me what night you will be coming?
+	B: We will be coming to your restaurant on Tuesday night.
+
+	A: What time will you be dining with us?
+	B: Our first choice would be 7:00, or perhaps 7:30.
+
+	A: How many guests will be in your party?
+	B: Four of us will be coming.
+
+
+	A: Shogun Restaurant of Pasadena.
+	B: Hi, could you help me? I need to make a dinner reservation.
+	A: What time do you think that you would like to have dinner?
+	B: 7:00 would be best, or maybe 7:30.
+	A: How many diners will be in your group?
+	B: We need a reservation for four.
+	A: I have a table for four available at 7:00, if you would just give me your name.
+	B: My last name is Foster. Thank you for the reservation.
+

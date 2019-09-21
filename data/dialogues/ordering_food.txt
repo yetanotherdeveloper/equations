@@ -1,0 +1,26 @@
+	A: Can I start you off with anything to drink?
+	B: Yes, may I have some water, please?
+
+	A: would you like any appetizers today?
+	B: May I get an order of barbeque wings?
+
+	A: What can I get you?
+	B: May I have the fettuccini Alfredo?
+
+
+	A: May I get you anything to drink?
+	B: Yes, please. May I get a glass of lemonade?
+	A: Would you like an appetizer?
+	B: May I get an order of barbeque wings?
+	A: What would you like?
+	B: Let me have the baby-back ribs.
+
+	A: Good evening, can I get you a drink?
+	B: Sure, I would like a Coke.
+	A: Would you like to order anything off the appetizer menu?
+	B: Let's see, can I get some fried zucchini, please?
+	A: Would you like to order anything else?
+	B: No, that's it, thank you.
+	A: What did you want to order?
+	B: Can I get a cheeseburger and some fries?
+

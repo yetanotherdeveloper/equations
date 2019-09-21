@@ -179,7 +179,7 @@ class EquationsConfig:
     """Class to define object for serialization"""
     def __init__(self, args):
         self.terminate = False
-        self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1,
+        self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1, 'num_dialogues_puzzles' : 1,
                 'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1, 'num_memory_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
                 'maze_size' : 8, 'memory_size' : 4, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
@@ -198,6 +198,7 @@ class EquationsConfig:
             self.process_arg(configDir,'num_muls', args.set_num_muls, -1)
             self.process_arg(configDir,'num_divs', args.set_num_divs, -1)
             self.process_arg(configDir,'num_lang_puzzles', args.set_num_lang_puzzles, -1)
+            self.process_arg(configDir,'num_dialogues_puzzles', args.set_num_dialogues_puzzles, -1)
             self.process_arg(configDir,'num_text_puzzles', args.set_num_text_puzzles, -1)
             self.process_arg(configDir,'num_snail_puzzles', args.set_num_snail_puzzles, -1)
             self.process_arg(configDir,'num_memory_puzzles', args.set_num_memory_puzzles, -1)
@@ -304,6 +305,7 @@ class EquationsConfig:
         self.print_attrib_int('num_muls')
         self.print_attrib_int('num_divs')
         self.print_attrib_int('num_lang_puzzles')
+        self.print_attrib_int('num_dialogues_puzzles')
         self.print_attrib_int('num_clock_puzzles')
         self.print_attrib_int('num_mazes')
         self.print_attrib_int('num_text_puzzles')
@@ -469,6 +471,29 @@ class Equation(QtGui.QWidget):
         def Render(self, qp, rect):
             qp.setPen(QtGui.QColor(0,0,255))
             qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
+
+
+    class DialoguesPuzzleVisualization(Visualization):
+        def __init__(self, label, description, width, height, tts, stringToPrint):
+
+            self.tts = tts
+            self.label = label
+            self.stringToPrint = stringToPrint
+            self.description = self.makeDescription(description, self.stringToPrint)
+            self.say()
+
+        def cleanup(self):
+            pass
+
+        def makeDescription(self, description, stringToPrint):
+            """ Function that generates message to be uttered when Lang puzzle is presented"""
+
+            return "Pick the best option. " + stringToPrint.replace("Answer:","") 
+
+        def Render(self, qp, rect):
+            qp.setPen(QtGui.QColor(0,0,255))
+            qp.setFont(QtGui.QFont('Decorative',30))
             qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
 
     class BearsPuzzleVisualization(Visualization):
@@ -1050,15 +1075,17 @@ class Equation(QtGui.QWidget):
 
                 
 
-    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_clock_puzzles, num_mazes,
+    def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_dialogues_puzzles, num_clock_puzzles, num_mazes,
                             num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, num_memory_puzzles, maximum_value, maze_size, memory_size, maximum_bears, maximum_arrangement_size,
                              tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
         self.args = args
-        self.resourcesPath = os.path.realpath(__file__).replace("equations.py","")
+        fullpath = os.path.realpath(__file__)
+        self.resourcesPath = fullpath[0:fullpath.rfind('/')]
         self.images = self.resourcesPath + "/data/images/"
+        self.dialogues = self.resourcesPath + "/data/dialogues/"
         self.description = ""
         self.visualizer = None
         self.tts = tts
@@ -1092,6 +1119,9 @@ class Equation(QtGui.QWidget):
         # Add num_lang_puzzles param
         for i in range(0,num_lang_puzzles):
             operations.append('lang')
+        # Add num_dialogues_puzzles param
+        for i in range(0,num_dialogues_puzzles):
+            operations.append('dialogues')
         # Add num_text_puzzles param
         for i in range(0,num_text_puzzles):
             operations.append('text')
@@ -1208,6 +1238,13 @@ class Equation(QtGui.QWidget):
                             self.geometry().height(),
                             self.tts,
                             self.tasks[self.iter][0])
+                elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "dialogues":
+                    self.visualizer = self.DialoguesPuzzleVisualization(QtGui.QLabel(self),
+                            self.tasks[self.iter][4],
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][0])
                 elif self.iter < len(self.tasks) and (
                    self.tasks[self.iter][3] == "+" or
                    self.tasks[self.iter][3] == "/" or
@@ -1318,6 +1355,21 @@ class Equation(QtGui.QWidget):
             for i in range(1,a+1):
                 b *= i
             equation_string = str(a)+"!="
+        elif matop == "dialogues":
+            badAnswers = ["",""]
+            data, question, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareDialoguesData()
+            a = random.randint(1,3)
+            b = goodAnswer
+            equation_string = question+"\n\n"
+            baddies_index = 0
+            for i in range(1,4):
+                if i == a:
+                    equation_string+=str(i) + ") " + goodAnswer +"\n"
+                else:
+                    equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
+                    baddies_index +=1
+            equation_string += "\n\nAnswer: " 
+
         elif matop == "lang":
             badAnswers = ["",""]
             data, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
@@ -1577,6 +1629,9 @@ class Equation(QtGui.QWidget):
         elif self.tasks[self.iter][3] == "lang":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "dialogues":
+            typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "text":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
@@ -1605,6 +1660,46 @@ class Equation(QtGui.QWidget):
             return True
         else:
             return False
+
+    def parseDialogueFile(self, dialoguePath):
+        questions = []
+        answers = []
+        with open(dialoguePath) as f:
+          i = 0
+          for line in f:
+            if not line.strip(): continue
+            if i == 0:
+                questions.append(line)
+            else:
+                answers.append(line)
+            i = 1 - i
+        index = random.randint(0,len(questions)-1)
+        question = questions[index]
+        answer = answers[index]
+        question = ' '.join(question.split()[1:])
+        answer = ' '.join(answer.split()[1:])
+        return question, answer
+
+    def prepareDialoguesData(self):
+        """ Load first dialog randomly and store question and answer.
+            Then load two random answers from other modules"""
+        dialoguesNames = listdir(self.dialogues)
+        # Remove README from dialogues list
+        dialoguesNames.remove("README")
+        # Pick dialogue from list of dialogues
+        dialogue = random.choice(dialoguesNames)
+        dialoguesNames.remove(dialogue)
+        # Parse dialogue
+        question, answer = self.parseDialogueFile(self.dialogues+"/"+dialogue)
+        description = dialogue.strip(".txt").replace("_"," ")+"\n.  "
+        # Pick two more answers from other dialogues
+        dialogue = random.choice(dialoguesNames)
+        dialoguesNames.remove(dialogue)
+        badquestion, badanswer1 = self.parseDialogueFile(self.dialogues+"/"+dialogue)
+        dialogue = random.choice(dialoguesNames)
+        dialoguesNames.remove(dialogue)
+        badquestion, badanswer2 = self.parseDialogueFile(self.dialogues+"/"+dialogue)
+        return description, question, answer, badanswer1, badanswer2
 
     def prepareTestData(self, imagesDirPath):
         """# Load images randomly
@@ -1750,6 +1845,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_muls", help="Number of Multiplication riddles", type=int, default=-1)
     parser.add_argument("--set_num_divs", help="Number of Division riddles", type=int, default=-1)
     parser.add_argument("--set_num_lang_puzzles", help="Number of Language riddles", type=int, default=-1)
+    parser.add_argument("--set_num_dialogues_puzzles", help="Number of Dialogues riddles", type=int, default=-1)
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
@@ -1776,6 +1872,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_muls'),
                             config.isEnabled('num_divs'),
                             config.isEnabled('num_lang_puzzles'),
+                            config.isEnabled('num_dialogues_puzzles'),
                             config.isEnabled('num_clock_puzzles'),
                             config.isEnabled('num_mazes'),
                             config.isEnabled('num_text_puzzles'),

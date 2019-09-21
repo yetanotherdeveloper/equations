@@ -50,6 +50,10 @@ maze puzzle:
 ![maze puzzle](data/screenshots/screen9.png)
 memory puzzle:
 ![memory puzzle](data/screenshots/screen14.png)
+snail puzzle:
+![snail puzzle](data/screenshots/screen16.png)
+dialogues puzzle:
+![dialogues puzzle](data/screenshots/screen15.png)
 Choose URL to launch(netflix, youtube:
 ![run cartoon](data/screenshots/screen13.png)
 setting maximum value for math puzzles from commandline:

@@ -1,0 +1,11 @@
+	A: Hi, how are you doing?
+	B: I'm fine. How about yourself?
+
+
+	A: How's it going?
+	B: I'm doing well. How about you?
+
+
+	A: How are you doing today?
+	B: I'm doing great. What about you?
+
