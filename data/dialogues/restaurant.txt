@@ -1,0 +1,26 @@
+
+	A: Devi, have you thought about where would you like to go to dinner on Friday for your birthday?
+	B: I am not sure. I don't know that many restaurants around here.
+
+	A: What kind of food would you like for your birthday?
+	B: I enjoy Thai or Japanese the best.
+
+	A: Devi, do you have any preference for where you would like to go for dinner for your birthday?
+	B: I don't really know where I want to go. I am having trouble thinking of a particular restaurant.
+
+	A: There is a great restaurant directory here in the weekend section of the newspaper.
+	B: OK, we could look at that.
+
+	A: Do you have a particular type of food that you would like?
+	B: I really like Japanese or Thai food.
+
+	A: That Japanese restaurant, Shogun, got good reviews.
+	B: Oh yeah! I saw a review of that restaurant on television. The reviewer loved it!
+
+	A: Devi, do you have a favorite place that you would like to go to for your birthday dinner?
+	B: I am kind of at a loss right now to think of some place special. 
+
+	A: What is your favorite type of restaurant food?
+	B: I like a lot of things, but Thai or Japanese would be good.
+
+

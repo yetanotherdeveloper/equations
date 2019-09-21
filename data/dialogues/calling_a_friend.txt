@@ -1,0 +1,25 @@
+	A: Hello, may I speak to Alice please?
+	B: This is she. How's it going?
+	A: I've been trying to call you all day.
+	B: Sorry about that. I was cleaning up.
+	A: Maybe we can go see a movie or something.
+	B: That sounds like fun. Let's do it.
+
+	A: Hi, how are you. Is Alice there?
+	B: Speaking. What's up?
+	A: Why haven't you answered the phone?
+	B: My bad, I had chores to do.
+	A: I want to do something tomorrow with you.
+	B: Sounds good. What did you have in mind?
+	A: I was thinking about seeing a movie.
+	B: Okay, let's go see a movie.
+
+	A: Is Alice available?
+	B: You're talking to her.
+	A: I've called you a hundred times today.
+	B: I was busy doing something. I apologize.
+	A: Do you want to do something tomorrow?
+	B: Is there somewhere special you wanted to go?
+	A: How about a movie?
+	B: A movie sounds good.
+
