@@ -1,0 +1,27 @@
+	A: What are you going to eat with your sandwich?
+	B: I think I'm going to eat a piece of fruit.
+	A: What kind of apples do you like to eat?
+	B: I love green apples.
+	A: Green apples are too sour for me.
+	B: So, you like red apples better?
+	A: Yes, I love red apples.
+	B: I think green apples are a lot better.
+
+
+	A: What are you going to have along with your sandwich?
+	B: I may have a piece of fruit.
+	A: What's your favorite kind of fruit?
+	B: I really only eat apples and grapes.
+	A: What is your favorite kind of apples?
+	B: Green apples are the best!
+	A: Red apples are great.
+	B: They're not as good as green apples.
+
+
+	A: Are you going to eat anything with your sandwich?
+	B: I may get some fruit.
+	A: Really, what kind of fruit do you like?
+	B: I tend to only eat grapes and apples.
+	A: What kind of apples do you prefer?
+	B: I've always liked green apples.
+
