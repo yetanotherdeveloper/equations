@@ -1,0 +1,22 @@
+
+        A: I need help planning my vacation.
+	B: Sure, where would you like to go?
+
+
+	A: Do you know where you will be traveling?
+	B: I am open to suggestions at this point.
+	A: Are you wanting to travel to a tropical climate, or would you like to go somewhere with a cooler climate?
+	B: I would like to travel to a cooler destination.
+	A: I can give you some brochures that could give you some ideas.
+	B: I will look at them right now.
+	A: How much money is in your budget for this trip?
+	B: I think that I can spend about two hundred dollars a day.
+
+	A: Have you chosen your destination?
+	B: I don't know where I want to go yet.
+	A: Do you enjoy warm weather, or are you looking forward to a cooler vacation?
+	B: A nice temperate climate would be best for me.
+	A: Have you thought about what you would like to spend on this vacation?
+	B: I just got a bonus and can spend about three thousand dollars total.
+
+
