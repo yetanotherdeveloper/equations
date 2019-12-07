@@ -33,7 +33,7 @@ Running unit tests with dropping into debugger on failures:
 - accound for children with sudo priviligies to shutdown command
 - Linux OS
 
-# Screenshots
+# Screenshots & Videos
 Counting puzzle:
 ![counting](data/screenshots/screen7.png)
 Math(adding):
@@ -58,6 +58,8 @@ Choose URL to launch(netflix, youtube:
 ![run cartoon](data/screenshots/screen13.png)
 setting maximum value for math puzzles from commandline:
 ![customization](data/screenshots/screen8.png)
+
+[![Recording of gameplay](https://img.youtube.com/vi/ik8Sh_r72z8/0.jpg)](https://www.youtube.com/watch?v=ik8Sh_r72z8)
 
 # License
 Copyright (c) 2016, Jacek Czaja

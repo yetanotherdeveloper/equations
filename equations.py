@@ -1341,7 +1341,7 @@ class Equation(QtGui.QWidget):
             equation_string=str(a)+"*"+str(b)+"="
         elif matop == "/":
             a = random.randint(0,matMaxValue)
-            b = 2
+            b = random.randint(1,int(math.sqrt(matMaxValue)))
             a = int(a/b) * b
             equation_string=str(a)+"/"+str(b)+"="
         # Draw bears
@@ -1584,7 +1584,7 @@ class Equation(QtGui.QWidget):
 
     def prepareChoice(self):
         self.hideImages(self.tempMedals)
-        choices = {"http://www.netflix.com" : "./netflix.svg", "http://youtube.com" : "./youtube.svg"}
+        choices = {"http://www.netflix.com" : "/netflix.svg", "http://youtube.com" : "/youtube.svg"}
         # Extend chocies with user defined content
         for entry in self.content:
            choices[entry] = self.content[entry]       
@@ -1729,7 +1729,7 @@ class Equation(QtGui.QWidget):
         return kasia_items, sum_items
 
     def prepareSnailPuzzle(self, maxValue):
-        runners = ["snail-1.svg","snake-2.svg"]
+        runners = ["snail-1.svg","snake-2.svg","cat-3.svg"]
         participant = random.choice(runners)
         speed = int(participant.replace(".svg","")[participant.find('-')+1:]) 
         k = random.randint(speed,int(maxValue/speed))
