@@ -59,6 +59,7 @@ Choose URL to launch(netflix, youtube:
 setting maximum value for math puzzles from commandline:
 ![customization](data/screenshots/screen8.png)
 
+Recording of gameplay:
 [![Recording of gameplay](https://img.youtube.com/vi/ik8Sh_r72z8/0.jpg)](https://www.youtube.com/watch?v=ik8Sh_r72z8)
 
 # License
