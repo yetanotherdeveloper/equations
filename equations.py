@@ -502,8 +502,9 @@ class Equation(QtGui.QWidget):
             self.tts = tts
             self.tempImages = []
             self.stringToPrint = "? ="
+            is_svg = picName[-4:] == ".svg"
+            self.animals = picName[picName.rfind('/')+1:-4] + "s"
             for pos in range(0,numBears):
-                pic = QtSvg.QSvgWidget(picName, qparent)
                 sizeOfBear = width/10
                 if (pos+1)*sizeOfBear >= width:
                     posx = x+(pos+1)*sizeOfBear - width
@@ -511,7 +512,16 @@ class Equation(QtGui.QWidget):
                 else:
                     posx = x+pos*sizeOfBear
                     posy = y
-                pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
+
+                if is_svg:
+                    pic = QtSvg.QSvgWidget(picName, qparent)
+                    pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
+                else:
+                    im = QtGui.QPixmap(picName).scaled(sizeOfBear,sizeOfBear)
+                    pic = QtGui.QLabel(qparent)
+                    pic.setGeometry(posx,posy,sizeOfBear,sizeOfBear)
+                    pic.setPixmap(im)
+
                 pic.show()
                 self.tempImages.append(pic)
             self.description = self.makeDescription()
@@ -520,7 +530,7 @@ class Equation(QtGui.QWidget):
             pass
 
         def makeDescription(self):
-            return "How many bears You can see?"
+            return "How many "+self.animals+" You can see?"
 
         def cleanup(self):
             for widget in self.tempImages:
@@ -1162,7 +1172,7 @@ class Equation(QtGui.QWidget):
         if self.iter < len(self.tasks):
             if self.visualized == False:
                 if self.tasks[self.iter][3] == "?":
-                    self.visualizer = self.BearsPuzzleVisualization(self.resourcesPath + "/bear.svg", self, 
+                    self.visualizer = self.BearsPuzzleVisualization(self.resourcesPath + "/" + random.choice(["bear.svg", "cat.png", "dog.png", "rabbit.png"]), self, 
                             self.geometry().x(), 
                             self.geometry().y(), 
                             self.geometry().width(), 
