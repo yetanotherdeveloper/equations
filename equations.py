@@ -180,7 +180,7 @@ class EquationsConfig:
     def __init__(self, args):
         self.terminate = False
         self.data = { 'num_adds' : 1, 'num_subs' : 1,'num_muls' : 1,'num_divs' : 1, 'num_lang_puzzles' : 1, 'num_dialogues_puzzles' : 1,
-                'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1, 'num_memory_puzzles' : 1, 'num_mazes' : 1, 'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
+                'num_clock_puzzles' : 1,  'num_text_puzzles' : 1, 'num_buying_puzzles' : 1, 'num_arrangement_puzzles' : 1, 'num_snail_puzzles' : 1, 'num_memory_puzzles' : 1, 'num_mazes' : 1, 'num_typings' : 1,'day' : 0 , 'daily_counter' : 0, 'maximum_daily_counter' : 3, 'maximum_bears' : 15 , 'maximum_value' : 10, 'maximum_arrangement_size' : 2,
                 'maze_size' : 8, 'memory_size' : 4, 'content' : {}, 'tts' : "festival"}
         # If there is a file unpickle it
         # then check the data
@@ -206,6 +206,7 @@ class EquationsConfig:
             self.process_arg(configDir,'num_arrangement_puzzles', args.set_num_arrangement_puzzles, -1)
             self.process_arg(configDir,'num_clock_puzzles', args.set_num_clock_puzzles, -1)
             self.process_arg(configDir,'num_mazes', args.set_num_mazes, -1)
+            self.process_arg(configDir,'num_typing_puzzles', args.set_num_typing_puzzles, -1)
             self.process_arg(configDir,'daily_counter', args.set_daily_counter, -1)
             self.process_arg(configDir,'maximum_daily_counter', args.set_maximum_daily_counter, 0)
             self.process_arg(configDir,'maximum_value', args.set_maximum_value, -1)
@@ -313,6 +314,7 @@ class EquationsConfig:
         self.print_attrib_int('num_arrangement_puzzles')
         self.print_attrib_int('num_snail_puzzles')
         self.print_attrib_int('num_memory_puzzles')
+        self.print_attrib_int('num_typing_puzzles')
         self.print_attrib_int('daily_counter')
         self.print_attrib_int('maximum_daily_counter')
         self.print_attrib_int('maximum_value')
@@ -473,6 +475,37 @@ class Equation(QtGui.QWidget):
             qp.setFont(QtGui.QFont('Decorative',50))
             qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
 
+    class TypingPuzzleVisualization(Visualization):
+        def __init__(self, label, pic, width, height, tts, objectName, stringToPrint):
+            # TODO: put this in the middle
+            self.tts = tts
+            self.label = label
+            self.stringToPrint = stringToPrint
+            self.sizeOfAnimal = height/4
+            pixmap = pic.scaled(self.sizeOfAnimal,self.sizeOfAnimal)
+            self.tempImages = []
+            startx = width/2 - self.sizeOfAnimal/2
+            starty = 0
+            label.setGeometry(startx,starty,self.sizeOfAnimal,self.sizeOfAnimal)
+            label.setPixmap(pixmap)
+            label.show()
+            self.tempImages.append(label)
+            self.description = self.makeDescription(objectName)
+            self.say()
+            print("object name: " + objectName)
+
+        def cleanup(self):
+            self.label.setHidden(True)
+            pass
+
+        def makeDescription(self, objectName):
+            """ Function that generates message to be uttered when Lang puzzle is presented"""
+            return "Please type: " + objectName
+
+        def Render(self, qp, rect):
+            qp.setPen(QtGui.QColor(0,0,255))
+            qp.setFont(QtGui.QFont('Decorative',50))
+            qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
 
     class DialoguesPuzzleVisualization(Visualization):
         def __init__(self, label, description, width, height, tts, stringToPrint):
@@ -1086,7 +1119,7 @@ class Equation(QtGui.QWidget):
                 
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_dialogues_puzzles, num_clock_puzzles, num_mazes,
-                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, num_memory_puzzles, maximum_value, maze_size, memory_size, maximum_bears, maximum_arrangement_size,
+                            num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, num_memory_puzzles, num_typing_puzzles, maximum_value, maze_size, memory_size, maximum_bears, maximum_arrangement_size,
                              tts, content):
         super(Equation, self).__init__()
         # Inicjalizacja
@@ -1132,6 +1165,9 @@ class Equation(QtGui.QWidget):
         # Add num_dialogues_puzzles param
         for i in range(0,num_dialogues_puzzles):
             operations.append('dialogues')
+        # Add typing param
+        for i in range(0,num_typing_puzzles):
+            operations.append('typing')
         # Add num_text_puzzles param
         for i in range(0,num_text_puzzles):
             operations.append('text')
@@ -1247,6 +1283,14 @@ class Equation(QtGui.QWidget):
                             self.geometry().width(),
                             self.geometry().height(),
                             self.tts,
+                            self.tasks[self.iter][0])
+                elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "typing":
+                    self.visualizer = self.TypingPuzzleVisualization(QtGui.QLabel(self),
+                            QtGui.QPixmap(self.tasks[self.iter][4]), 
+                            self.geometry().width(),
+                            self.geometry().height(),
+                            self.tts,
+                            self.tasks[self.iter][1],
                             self.tasks[self.iter][0])
                 elif self.iter < len(self.tasks) and  self.tasks[self.iter][3] == "dialogues":
                     self.visualizer = self.DialoguesPuzzleVisualization(QtGui.QLabel(self),
@@ -1383,7 +1427,6 @@ class Equation(QtGui.QWidget):
         elif matop == "lang":
             badAnswers = ["",""]
             data, goodAnswer, badAnswers[0], badAnswers[1] = self.prepareTestData(self.images)
-            # TODO Remeber which answer is proper one        
             a = random.randint(1,3)
             b = self.addPrefix(goodAnswer)
             equation_string = ""
@@ -1395,6 +1438,11 @@ class Equation(QtGui.QWidget):
                     equation_string+=str(i) + ") " + badAnswers[baddies_index] +"\n"
                     baddies_index +=1
             equation_string += "\n\nAnswer: " 
+        elif matop == "typing":
+            data, goodAnswer = self.prepareTypingTestData(self.images)
+            a = goodAnswer
+            b = 0
+            equation_string = "\n\nAnswer: " 
         elif matop == "text":
             data, a, b = self.prepareTextPuzzle(matMaxValue)  
             equation_string = "\nAmount of Katie ice creams =  " 
@@ -1428,6 +1476,7 @@ class Equation(QtGui.QWidget):
     def keyPressEvent(self, e):
         self.proceedChoiceKeys(e)
         self.proceedEquationKeys(e)
+        self.proceedTypingKeys(e)
         self.proceedMazeKeys(e)
         self.proceedMemoryKeys(e)
         self.update()
@@ -1486,6 +1535,60 @@ class Equation(QtGui.QWidget):
                 self.executeOnSuccess()
         return        
 
+
+    def proceedTypingKeys(self,e):
+        """ Key handling routine for equation and lang puzzles"""
+        if self.iter == len(self.tasks):
+            return
+        if self.tasks[self.iter][3] != "typing":
+            return
+        key2str = {
+                   QtCore.Qt.Key_A : "a",
+                   QtCore.Qt.Key_B : "b",
+                   QtCore.Qt.Key_C : "c",
+                   QtCore.Qt.Key_D : "d",
+                   QtCore.Qt.Key_E : "e",
+                   QtCore.Qt.Key_F : "f",
+                   QtCore.Qt.Key_G : "g",
+                   QtCore.Qt.Key_H : "h",
+                   QtCore.Qt.Key_I : "i",
+                   QtCore.Qt.Key_J : "j",
+                   QtCore.Qt.Key_K : "k",
+                   QtCore.Qt.Key_L : "l",
+                   QtCore.Qt.Key_M : "m",
+                   QtCore.Qt.Key_N : "n",
+                   QtCore.Qt.Key_O : "o",
+                   QtCore.Qt.Key_P : "p",
+                   QtCore.Qt.Key_R : "r",
+                   QtCore.Qt.Key_S : "s",
+                   QtCore.Qt.Key_T : "t",
+                   QtCore.Qt.Key_U : "u",
+                   QtCore.Qt.Key_W : "w",
+                   QtCore.Qt.Key_X : "x",
+                   QtCore.Qt.Key_Y : "y",
+                   QtCore.Qt.Key_Z : "z",
+                    }
+        if(e.isAutoRepeat() != True):
+            if e.key() == QtCore.Qt.Key_0:
+                self.visualizer.say()
+            elif((e.key() == QtCore.Qt.Key_Backspace) and (len(self.tasks[self.iter][0]) > self.lenBaseText[self.iter])):
+               self.tasks[self.iter] = (self.tasks[self.iter][0][:-1], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
+               self.visualizer.setStringToPrint(self.tasks[self.iter][0])
+            elif((e.key() in key2str) and (len(self.tasks[self.iter][0]) < self.lenBaseText[self.iter] + 13)): # No more than three characters
+                self.tasks[self.iter] = ( self.tasks[self.iter][0] + key2str[e.key()], self.tasks[self.iter][1], self.tasks[self.iter][2], self.tasks[self.iter][3]) 
+                self.visualizer.setStringToPrint(self.tasks[self.iter][0])
+            elif((e.key() == QtCore.Qt.Key_Enter) or (e.key() == QtCore.Qt.Key_Return)):
+                # do not execute when 0 length input is there 
+                if (len(self.tasks[self.iter][0]) != self.lenBaseText[self.iter]):
+                    # Validate and Execute
+                    if(self.validateEquation() == True):
+                        self.executeOnSuccess()
+                    else:
+                        self.visualizer.say("Wrong!")
+                        self.errorOnPresentTask = True
+
+
+
     def proceedEquationKeys(self,e):
         """ Key handling routine for equation and lang puzzles"""
         if self.iter == len(self.tasks):
@@ -1493,6 +1596,8 @@ class Equation(QtGui.QWidget):
         if self.tasks[self.iter][3] == "maze":
             return
         if self.tasks[self.iter][3] == "memory":
+            return
+        if self.tasks[self.iter][3] == "typing":
             return
         key2str = {
                    QtCore.Qt.Key_0 : "0",
@@ -1617,6 +1722,7 @@ class Equation(QtGui.QWidget):
 
 
     def validateEquation(self):
+        print("Validate!!")
         # Get result typed and convert it to number
         if(len(self.tasks[self.iter][0]) == self.lenBaseText[self.iter]) and self.tasks[self.iter][3] != "maze":
             return False
@@ -1641,6 +1747,9 @@ class Equation(QtGui.QWidget):
             computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "dialogues":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
+            computed_result = self.tasks[self.iter][1]
+        elif self.tasks[self.iter][3] == "typing":
+            typed_result = (self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
             computed_result = self.tasks[self.iter][1]
         elif self.tasks[self.iter][3] == "text":
             typed_result = int(self.tasks[self.iter][0][self.lenBaseText[self.iter]:])
@@ -1726,6 +1835,21 @@ class Equation(QtGui.QWidget):
         incorrectAnimalName1, incorrectAnimalName2 = self.getIncorrectAnswers(imagesNames, correctAnimalName)
         correctPicFileName = imagesDirPath + "/" + correctOneName
         return correctPicFileName, correctAnimalName, incorrectAnimalName1,incorrectAnimalName2
+
+
+    def prepareTypingTestData(self, imagesDirPath):
+        """# Load image randomly
+         os listdir , choose randomyl 1 file
+         proper answer (expected typing) is returned"""
+        # TODO: make sure it is only files not directories
+        imagesNames = listdir(imagesDirPath)
+        # Get Randomly imagename to be proper answer and its picture
+        correctOneName = random.choice(imagesNames)
+        # Here is name of animal that corresponds to picture
+        correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
+        correctPicFileName = imagesDirPath + "/" + correctOneName
+        return correctPicFileName, correctAnimalName
+
 
     def computeAnswerAndTotal(self, param_pair, maxValue):
         # Kasia_items * coeff[0] + coeff[1] + Kasia_items < maxValue <=> (maxValue - coeff[1])/(1 + coeff[0]) >= Kasia_items
@@ -1859,6 +1983,7 @@ if __name__ == "__main__":
     parser.add_argument("--set_num_mazes", help="Number of Maze riddles", type=int, default=-1)
     parser.add_argument("--set_num_clock_puzzles", help="Number of Clock riddles", type=int, default=-1)
     parser.add_argument("--set_num_text_puzzles", help="Number of Text riddles", type=int, default=-1)
+    parser.add_argument("--set_num_typing_puzzles", help="Number of Typing riddles", type=int, default=-1)
     parser.add_argument("--set_num_memory_puzzles", help="Number of memory puzzles", type=int, default=-1)
     parser.add_argument("--set_num_snail_puzzles", help="Number of Snail riddles", type=int, default=-1)
     parser.add_argument("--set_num_buying_puzzles", help="Number of Buying riddles", type=int, default=-1)
@@ -1890,6 +2015,7 @@ if __name__ == "__main__":
                             config.isEnabled('num_arrangement_puzzles'),
                             config.isEnabled('num_snail_puzzles'),
                             config.isEnabled('num_memory_puzzles'),
+                            config.isEnabled('num_typing_puzzles'),
                             config.getMaximumValue(),
                             config.getMazeSize(),
                             config.getMemorySize(),
