@@ -1567,6 +1567,7 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_X : "x",
                    QtCore.Qt.Key_Y : "y",
                    QtCore.Qt.Key_Z : "z",
+                   QtCore.Qt.Key_Space : " ",
                     }
         if(e.isAutoRepeat() != True):
             if e.key() == QtCore.Qt.Key_0:
@@ -1847,6 +1848,7 @@ class Equation(QtGui.QWidget):
         correctOneName = random.choice(imagesNames)
         # Here is name of animal that corresponds to picture
         correctAnimalName = correctOneName.replace("-wt.gif","").replace("-vt.gif","").replace("-vb.gif","").replace("-wb.gif","").replace(".gif","")
+        correctAnimalName = correctAnimalName.replace("-"," ")
         correctPicFileName = imagesDirPath + "/" + correctOneName
         return correctPicFileName, correctAnimalName
 
