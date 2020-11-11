@@ -1120,7 +1120,7 @@ class Equation(QtGui.QWidget):
 
     def __init__(self,args, num_adds, num_subs, num_muls, num_divs, num_lang_puzzles, num_dialogues_puzzles, num_clock_puzzles, num_mazes,
                             num_text_puzzles, num_buying_puzzles, num_arrangement_puzzles, num_snail_puzzles, num_memory_puzzles, num_typing_puzzles, maximum_value, maze_size, memory_size, maximum_bears, maximum_arrangement_size,
-                             tts, content):
+                             tts, content, choice_menu):
         super(Equation, self).__init__()
         # Inicjalizacja
         random.seed()
@@ -1131,6 +1131,7 @@ class Equation(QtGui.QWidget):
         self.dialogues = self.resourcesPath + "/data/dialogues/"
         self.description = ""
         self.visualizer = None
+        self.choice_menu = choice_menu
         self.tts = tts
         self.content = content
         self.tasks = []
@@ -1559,6 +1560,7 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_N : "n",
                    QtCore.Qt.Key_O : "o",
                    QtCore.Qt.Key_P : "p",
+                   QtCore.Qt.Key_Q : "q",
                    QtCore.Qt.Key_R : "r",
                    QtCore.Qt.Key_S : "s",
                    QtCore.Qt.Key_T : "t",
@@ -1690,7 +1692,15 @@ class Equation(QtGui.QWidget):
         self.visualized = False
         self.errorOnPresentTask = False
         if self.iter == len(self.tasks):
-            self.prepareChoice()
+            # Calculate time to have computer acrivities for
+            timeToWatch = 20 
+            if self.iter > self.numMistakes:
+                timeToWatch +=  (self.iter  - self.numMistakes) 
+            if self.choice_menu: 
+                self.prepareChoice(timeToWatch)
+            else:
+                subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
+                exit()
         return
 
     def hideImages(self,widgets):
@@ -1698,17 +1708,13 @@ class Equation(QtGui.QWidget):
             widget.setHidden(True)
 
 
-    def prepareChoice(self):
+    def prepareChoice(self, timeToWatch):
         self.hideImages(self.tempMedals)
         choices = {"http://www.netflix.com" : "/netflix.svg", "http://youtube.com" : "/youtube.svg"}
         # Extend chocies with user defined content
         for entry in self.content:
            choices[entry] = self.content[entry]       
  
-        # Calculate time to play cartoons for
-        timeToWatch = 20 
-        if self.iter > self.numMistakes:
-            timeToWatch +=  (self.iter  - self.numMistakes) 
         width = self.geometry().width()/len(choices)/2
         height = self.geometry().height()/len(choices)/2
         self.choice = self.Choice(choices,
@@ -1994,6 +2000,7 @@ if __name__ == "__main__":
     parser.add_argument("--add_content", help="<command to execute>:<picture>", type=str, default="")
     parser.add_argument("--remove_content", help="remove selected content (use list_content to get number)", type=int, default=-1)
     parser.add_argument("--list_content", help="Lists pool of commands to execute", action="store_true")
+    parser.add_argument("--choice_menu", help="Enable choice menu", action="store_true")
 
     args = parser.parse_args()
     config = EquationsConfig(args)
@@ -2024,7 +2031,8 @@ if __name__ == "__main__":
                             config.getMaximumBears(),       
                             config.getMaximumArrangementSize(),
                             config.getTTS(),
-                            config.getContent())       
+                            config.getContent(),
+                            args.choice_menu)       
     else:
         print "Daily limit exhausted" 
         stop = Stop(args)    
