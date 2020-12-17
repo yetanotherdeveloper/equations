@@ -1700,7 +1700,7 @@ class Equation(QtGui.QWidget):
                 self.prepareChoice(timeToWatch)
             else:
                 subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
-                exit()
+                exit(111)
         return
 
     def hideImages(self,widgets):
