@@ -404,6 +404,7 @@ class Stop(QtGui.QWidget):
         pic.show()
         self.update()
         if args.dry_run == False:
+            subprocess.call(["sudo","shutdown","-c"])
             subprocess.call(["sudo","shutdown","-h","+1"])
         elif args.dry_run == "Test":
             pass
@@ -418,6 +419,10 @@ class Equation(QtGui.QWidget):
             self.tts = tts
             self.description = ""
             self.stringToPrint = ""
+            # There is five minutes ofr each puzzle apart of memory which is 10 
+            subprocess.call(["sudo","shutdown","-c"])
+            subprocess.call(["sudo","shutdown","-h","+5"])
+
 
         def say(self, text=None):
             # This is one is for espeak tts
@@ -445,7 +450,7 @@ class Equation(QtGui.QWidget):
 
     class LangPuzzleVisualization(Visualization):
         def __init__(self, label, pic, width, height, tts, stringToPrint):
-
+            Equation.Visualization.__init__(self,tts)
             # TODO: put this in the middle
             self.tts = tts
             self.label = label
@@ -477,6 +482,8 @@ class Equation(QtGui.QWidget):
 
     class TypingPuzzleVisualization(Visualization):
         def __init__(self, label, pic, width, height, tts, objectName, stringToPrint):
+            #super(TypingPuzzleVisualization, self).__init__(tts)
+            Equation.Visualization.__init__(self,tts)
             # TODO: put this in the middle
             self.tts = tts
             self.label = label
@@ -507,9 +514,11 @@ class Equation(QtGui.QWidget):
             qp.setFont(QtGui.QFont('Decorative',50))
             qp.drawText(rect, QtCore.Qt.AlignCenter, self.stringToPrint)
 
+
     class DialoguesPuzzleVisualization(Visualization):
         def __init__(self, label, description, width, height, tts, stringToPrint):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.label = label
             self.stringToPrint = stringToPrint
@@ -532,6 +541,7 @@ class Equation(QtGui.QWidget):
     class BearsPuzzleVisualization(Visualization):
         def __init__(self, picName, qparent, x, y, width, height, tts, numBears):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.tempImages = []
             self.stringToPrint = "? ="
@@ -573,6 +583,7 @@ class Equation(QtGui.QWidget):
     class ArrangementPuzzleVisualization(Visualization):
         def __init__(self, qparent, sofaName, toyName, x, y, width, height, tts, stringToPrint, numBears):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.tempImages = []
             self.stringToPrint = stringToPrint
@@ -619,6 +630,7 @@ class Equation(QtGui.QWidget):
     class ClockPuzzleVisualization(Visualization):
         def __init__(self, qp, pic, x, y, width, height, tts, stringToPrint, correctTime):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.sizeOfClock = width/5
             self.tempImages = []
@@ -669,6 +681,7 @@ class Equation(QtGui.QWidget):
     class SnailPuzzleVisualization(Visualization):
         def __init__(self, qparent, raceFileName, animalFileName, animalName, animalSpeed, x, y, width, height, tts, stringToPrint, distance):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.sizeOfClock = width/5
             self.tempImages = []
@@ -725,6 +738,7 @@ class Equation(QtGui.QWidget):
     class TextPuzzleVisualization(Visualization):
         def __init__(self, qparent, picName, x, y, width, height, tts, stringToPrint, kasiaItems, numItems, relation):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
             self.tempImages = []
             self.stringToPrint = stringToPrint 
@@ -797,6 +811,9 @@ class Equation(QtGui.QWidget):
             return divisor
 
         def __init__(self, qparent, imagesDir, imagesFiles, x, y, width, height, tts ):
+            Equation.Visualization.__init__(self,tts)
+            subprocess.call(["sudo","shutdown","-c"])
+            subprocess.call(["sudo","shutdown","-h","+10"])
             self.tts = tts
             self.x = x 
             self.y = y
@@ -910,6 +927,7 @@ class Equation(QtGui.QWidget):
     class BuyingPuzzleVisualization(Visualization):
         def __init__(self, qparent, x, y, width, height, tts, stringToPrint, answer, pocket_coins, resourcesPath, item_file):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
 
             self.x = x 
@@ -1024,6 +1042,7 @@ class Equation(QtGui.QWidget):
     class MathPuzzleVisualization(Visualization):
         def __init__(self, tts, a, b, matop):
 
+            Equation.Visualization.__init__(self,tts)
             self.tts = tts
 
             #time.sleep(1)
@@ -1103,6 +1122,7 @@ class Equation(QtGui.QWidget):
             # Draw pictures of netflix and youtube
             if self.dry_run == False:
                 # Calculate time allowed for watching cartoons
+                subprocess.call(["sudo","shutdown","-c"])
                 subprocess.call(["sudo","shutdown","-h","+"+str(self.timeToWatch)])
                 # If HTTP is at the beginning then use browser
                 if content[0:4] == "http":                 
@@ -1565,6 +1585,7 @@ class Equation(QtGui.QWidget):
                    QtCore.Qt.Key_S : "s",
                    QtCore.Qt.Key_T : "t",
                    QtCore.Qt.Key_U : "u",
+                   QtCore.Qt.Key_V : "v",
                    QtCore.Qt.Key_W : "w",
                    QtCore.Qt.Key_X : "x",
                    QtCore.Qt.Key_Y : "y",
@@ -1699,6 +1720,7 @@ class Equation(QtGui.QWidget):
             if self.choice_menu: 
                 self.prepareChoice(timeToWatch)
             else:
+                subprocess.call(["sudo","shutdown","-c"])
                 subprocess.call(["sudo","shutdown","-h","+"+str(timeToWatch)])
                 exit(111)
         return
