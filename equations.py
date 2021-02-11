@@ -484,6 +484,8 @@ class Equation(QtGui.QWidget):
         def __init__(self, label, pic, width, height, tts, objectName, stringToPrint):
             #super(TypingPuzzleVisualization, self).__init__(tts)
             Equation.Visualization.__init__(self,tts)
+            subprocess.call(["sudo","shutdown","-c"])
+            subprocess.call(["sudo","shutdown","-h","+10"])
             # TODO: put this in the middle
             self.tts = tts
             self.label = label
