@@ -684,6 +684,8 @@ class Equation(QtGui.QWidget):
         def __init__(self, qparent, raceFileName, animalFileName, animalName, animalSpeed, x, y, width, height, tts, stringToPrint, distance):
 
             Equation.Visualization.__init__(self,tts)
+            subprocess.call(["sudo","shutdown","-c"])
+            subprocess.call(["sudo","shutdown","-h","+10"])
             self.tts = tts
             self.sizeOfClock = width/5
             self.tempImages = []
